@@ -42,11 +42,14 @@ abstract class HttpServiceMethod<ResponseT, ReturnT> extends ServiceMethod<Retur
     Annotation[] annotations = method.getAnnotations();
     Type adapterType;
     if (isKotlinSuspendFunction) {
+      // 被suspend关键字修饰的方法反编译后在Java中会变成在参数中以Continution为类型的参数        
+      // suspend fun login(): String  => Object login(Continuation<String> var1)
+      // 因此在Java中需要通过方法参数的最后一个参数的泛型来拿到真正的返回类型
       Type[] parameterTypes = method.getGenericParameterTypes();
       Type responseType = Utils.getParameterLowerBound(0,
           (ParameterizedType) parameterTypes[parameterTypes.length - 1]);
       if (getRawType(responseType) == Response.class && responseType instanceof ParameterizedType) {
-        // Unwrap the actual body type from Response<T>.
+        // 返回的类型是Response类型的
         responseType = Utils.getParameterUpperBound(0, (ParameterizedType) responseType);
         continuationWantsResponse = true;
       } else {
@@ -55,13 +58,14 @@ abstract class HttpServiceMethod<ResponseT, ReturnT> extends ServiceMethod<Retur
         // Find the entry for method
         // Determine if return type is nullable or not
       }
-
+      // 将responseType进一步封装得到adapterType
       adapterType = new Utils.ParameterizedTypeImpl(null, Call.class, responseType);
       annotations = SkipCallbackExecutorImpl.ensurePresent(annotations);
     } else {
       adapterType = method.getGenericReturnType();
     }
-
+    // adapterType就是需要适配器去进行转换的返回值的类型
+    // 查找对应的callAdapter  默认是DefaultCallAdapterFactory
     CallAdapter<ResponseT, ReturnT> callAdapter =
         createCallAdapter(retrofit, method, adapterType, annotations);
     Type responseType = callAdapter.responseType();
@@ -77,19 +81,22 @@ abstract class HttpServiceMethod<ResponseT, ReturnT> extends ServiceMethod<Retur
     if (requestFactory.httpMethod.equals("HEAD") && !Void.class.equals(responseType)) {
       throw methodError(method, "HEAD method must use Void as response type.");
     }
-
+    // 创建responseConverter
     Converter<ResponseBody, ResponseT> responseConverter =
         createResponseConverter(retrofit, method, responseType);
 
+    // callFactory 默认是okHttpClient
     okhttp3.Call.Factory callFactory = retrofit.callFactory;
+    // 判断是否是kotlin中的suspend方法
     if (!isKotlinSuspendFunction) {
+        // 如果不是kotlin的suspend方法  将callAdapter、responseConverter等传入CallAdapted构造方法
       return new CallAdapted<>(requestFactory, callFactory, responseConverter, callAdapter);
     } else if (continuationWantsResponse) {
-      //noinspection unchecked Kotlin compiler guarantees ReturnT to be Object.
+      // 返回类型是Response类型的
       return (HttpServiceMethod<ResponseT, ReturnT>) new SuspendForResponse<>(requestFactory,
           callFactory, responseConverter, (CallAdapter<ResponseT, Call<ResponseT>>) callAdapter);
     } else {
-      //noinspection unchecked Kotlin compiler guarantees ReturnT to be Object.
+      // 返回类型是Java Bean对象
       return (HttpServiceMethod<ResponseT, ReturnT>) new SuspendForBody<>(requestFactory,
           callFactory, responseConverter, (CallAdapter<ResponseT, Call<ResponseT>>) callAdapter,
           continuationBodyNullable);
@@ -132,9 +139,12 @@ abstract class HttpServiceMethod<ResponseT, ReturnT> extends ServiceMethod<Retur
     return adapt(call, args);
   }
 
+  // 适配器方法 可以通过addCallAdapterFactory()方法加入适配器以支持不同的返回类型的方法
+  // 比如 RxJava2CallAdapterFactory
   protected abstract @Nullable ReturnT adapt(Call<ResponseT> call, Object[] args);
 
   static final class CallAdapted<ResponseT, ReturnT> extends HttpServiceMethod<ResponseT, ReturnT> {
+    // 成员变量callAdapter
     private final CallAdapter<ResponseT, ReturnT> callAdapter;
 
     CallAdapted(RequestFactory requestFactory, okhttp3.Call.Factory callFactory,
@@ -149,6 +159,7 @@ abstract class HttpServiceMethod<ResponseT, ReturnT> extends ServiceMethod<Retur
     }
   }
 
+  // kotlin的suspend方法并且返回值是Response类型的
   static final class SuspendForResponse<ResponseT> extends HttpServiceMethod<ResponseT, Object> {
     private final CallAdapter<ResponseT, Call<ResponseT>> callAdapter;
 

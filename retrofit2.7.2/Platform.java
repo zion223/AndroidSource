@@ -57,8 +57,10 @@ class Platform {
     return null;
   }
 
+
   List<? extends CallAdapter.Factory> defaultCallAdapterFactories(
       @Nullable Executor callbackExecutor) {
+    // 默认的CallAdapterFactory
     DefaultCallAdapterFactory executorFactory = new DefaultCallAdapterFactory(callbackExecutor);
     return hasJava8Types
         ? asList(CompletableFutureCallAdapterFactory.INSTANCE, executorFactory)

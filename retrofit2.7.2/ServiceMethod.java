@@ -22,6 +22,7 @@ import javax.annotation.Nullable;
 import static retrofit2.Utils.methodError;
 
 abstract class ServiceMethod<T> {
+  // 解析注解
   static <T> ServiceMethod<T> parseAnnotations(Retrofit retrofit, Method method) {
     RequestFactory requestFactory = RequestFactory.parseAnnotations(retrofit, method);
 

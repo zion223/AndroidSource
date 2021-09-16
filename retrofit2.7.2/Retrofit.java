@@ -49,16 +49,14 @@ import static java.util.Collections.unmodifiableList;
  * the builder} and pass your interface to {@link #create} to generate an implementation.
  * <p>
  * For example,
- * <pre><code>
  * Retrofit retrofit = new Retrofit.Builder()
  *     .baseUrl("https://api.example.com/")
  *     .addConverterFactory(GsonConverterFactory.create())
  *     .build();
  *
  * MyApi api = retrofit.create(MyApi.class);
- * Response&lt;User&gt; user = api.getUser().execute();
- * </code></pre>
- *
+ * Response<User> user = api.getUser().execute();
+ * 
  * @author Bob Lee (bob@squareup.com)
  * @author Jake Wharton (jw@squareup.com)
  */
@@ -86,51 +84,17 @@ public final class Retrofit {
   /**
    * Create an implementation of the API endpoints defined by the {@code service} interface.
    * <p>
-   * The relative path for a given method is obtained from an annotation on the method describing
-   * the request type. The built-in methods are {@link retrofit2.http.GET GET},
-   * {@link retrofit2.http.PUT PUT}, {@link retrofit2.http.POST POST}, {@link retrofit2.http.PATCH
-   * PATCH}, {@link retrofit2.http.HEAD HEAD}, {@link retrofit2.http.DELETE DELETE} and
-   * {@link retrofit2.http.OPTIONS OPTIONS}. You can use a custom HTTP method with
-   * {@link HTTP @HTTP}. For a dynamic URL, omit the path on the annotation and annotate the first
-   * parameter with {@link Url @Url}.
-   * <p>
-   * Method parameters can be used to replace parts of the URL by annotating them with
-   * {@link retrofit2.http.Path @Path}. Replacement sections are denoted by an identifier
-   * surrounded by curly braces (e.g., "{foo}"). To add items to the query string of a URL use
-   * {@link retrofit2.http.Query @Query}.
-   * <p>
-   * The body of a request is denoted by the {@link retrofit2.http.Body @Body} annotation. The
-   * object will be converted to request representation by one of the {@link Converter.Factory}
-   * instances. A {@link RequestBody} can also be used for a raw representation.
-   * <p>
-   * Alternative request body formats are supported by method annotations and corresponding
-   * parameter annotations:
-   * <ul>
-   * <li>{@link retrofit2.http.FormUrlEncoded @FormUrlEncoded} - Form-encoded data with key-value
-   * pairs specified by the {@link retrofit2.http.Field @Field} parameter annotation.
-   * <li>{@link retrofit2.http.Multipart @Multipart} - RFC 2388-compliant multipart data with
-   * parts specified by the {@link retrofit2.http.Part @Part} parameter annotation.
-   * </ul>
-   * <p>
-   * Additional static headers can be added for an endpoint using the
-   * {@link retrofit2.http.Headers @Headers} method annotation. For per-request control over a
-   * header annotate a parameter with {@link Header @Header}.
-   * <p>
-   * By default, methods return a {@link Call} which represents the HTTP request. The generic
-   * parameter of the call is the response body type and will be converted by one of the
-   * {@link Converter.Factory} instances. {@link ResponseBody} can also be used for a raw
-   * representation. {@link Void} can be used if you do not care about the body contents.
-   * <p>
    * For example:
    * <pre>
    * public interface CategoryService {
-   *   &#64;POST("category/{cat}/")
-   *   Call&lt;List&lt;Item&gt;&gt; categoryList(@Path("cat") String a, @Query("page") int b);
+   *   @POST("category/{cat}/")
+   *   Call<List<Item>> categoryList(@Path("cat") String a, @Query("page") int b);
    * }
    * </pre>
    */
   @SuppressWarnings("unchecked") // Single-interface proxy creation guarded by parameter safety.
   public <T> T create(final Class<T> service) {
+    // 校验传入的service接口
     validateServiceInterface(service);
     return (T) Proxy.newProxyInstance(service.getClassLoader(), new Class<?>[] { service },
         new InvocationHandler() {
@@ -140,9 +104,11 @@ public final class Retrofit {
           @Override public @Nullable Object invoke(Object proxy, Method method,
               @Nullable Object[] args) throws Throwable {
             // If the method is a method from Object then defer to normal invocation.
+            // 判断要代理的方法是不是Object中的方法 eg. equals()、hashCode()、toString()
             if (method.getDeclaringClass() == Object.class) {
               return method.invoke(this, args);
             }
+            // JDK1.8 新特性 接口中的默认方法
             if (platform.isDefaultMethod(method)) {
               return platform.invokeDefaultMethod(method, service, proxy, args);
             }
@@ -153,6 +119,7 @@ public final class Retrofit {
 
   private void validateServiceInterface(Class<?> service) {
     if (!service.isInterface()) {
+      // 如果不是接口的话抛出异常        
       throw new IllegalArgumentException("API declarations must be interfaces.");
     }
 
@@ -160,6 +127,7 @@ public final class Retrofit {
     check.add(service);
     while (!check.isEmpty()) {
       Class<?> candidate = check.removeFirst();
+      // 接口中不允许有泛型<T> 形式
       if (candidate.getTypeParameters().length != 0) {
         StringBuilder message = new StringBuilder("Type parameters are unsupported on ")
             .append(candidate.getName());
@@ -171,7 +139,7 @@ public final class Retrofit {
       }
       Collections.addAll(check, candidate.getInterfaces());
     }
-
+    // 是否开启提前校验 可以校验接口的方法是否正确(但会影响性能)
     if (validateEagerly) {
       Platform platform = Platform.get();
       for (Method method : service.getDeclaredMethods()) {
@@ -182,6 +150,7 @@ public final class Retrofit {
     }
   }
 
+  // 解析接口中的方法
   ServiceMethod<?> loadServiceMethod(Method method) {
     ServiceMethod<?> result = serviceMethodCache.get(method);
     if (result != null) return result;
@@ -196,10 +165,6 @@ public final class Retrofit {
     return result;
   }
 
-  /**
-   * The factory used to create {@linkplain okhttp3.Call OkHttp calls} for sending a HTTP requests.
-   * Typically an instance of {@link OkHttpClient}.
-   */
   public okhttp3.Call.Factory callFactory() {
     return callFactory;
   }
@@ -209,30 +174,16 @@ public final class Retrofit {
     return baseUrl;
   }
 
-  /**
-   * Returns a list of the factories tried when creating a
-   * {@linkplain #callAdapter(Type, Annotation[])} call adapter}.
-   */
+
   public List<CallAdapter.Factory> callAdapterFactories() {
     return callAdapterFactories;
   }
 
-  /**
-   * Returns the {@link CallAdapter} for {@code returnType} from the available {@linkplain
-   * #callAdapterFactories() factories}.
-   *
-   * @throws IllegalArgumentException if no call adapter available for {@code type}.
-   */
+  // 查找CallAdapter
   public CallAdapter<?, ?> callAdapter(Type returnType, Annotation[] annotations) {
     return nextCallAdapter(null, returnType, annotations);
   }
 
-  /**
-   * Returns the {@link CallAdapter} for {@code returnType} from the available {@linkplain
-   * #callAdapterFactories() factories} except {@code skipPast}.
-   *
-   * @throws IllegalArgumentException if no call adapter available for {@code type}.
-   */
   public CallAdapter<?, ?> nextCallAdapter(@Nullable CallAdapter.Factory skipPast, Type returnType,
       Annotation[] annotations) {
     Objects.requireNonNull(returnType, "returnType == null");
@@ -263,33 +214,16 @@ public final class Retrofit {
     throw new IllegalArgumentException(builder.toString());
   }
 
-  /**
-   * Returns an unmodifiable list of the factories tried when creating a
-   * {@linkplain #requestBodyConverter(Type, Annotation[], Annotation[]) request body converter}, a
-   * {@linkplain #responseBodyConverter(Type, Annotation[]) response body converter}, or a
-   * {@linkplain #stringConverter(Type, Annotation[]) string converter}.
-   */
+
   public List<Converter.Factory> converterFactories() {
     return converterFactories;
   }
 
-  /**
-   * Returns a {@link Converter} for {@code type} to {@link RequestBody} from the available
-   * {@linkplain #converterFactories() factories}.
-   *
-   * @throws IllegalArgumentException if no converter available for {@code type}.
-   */
   public <T> Converter<T, RequestBody> requestBodyConverter(Type type,
       Annotation[] parameterAnnotations, Annotation[] methodAnnotations) {
     return nextRequestBodyConverter(null, type, parameterAnnotations, methodAnnotations);
   }
 
-  /**
-   * Returns a {@link Converter} for {@code type} to {@link RequestBody} from the available
-   * {@linkplain #converterFactories() factories} except {@code skipPast}.
-   *
-   * @throws IllegalArgumentException if no converter available for {@code type}.
-   */
   public <T> Converter<T, RequestBody> nextRequestBodyConverter(
       @Nullable Converter.Factory skipPast, Type type, Annotation[] parameterAnnotations,
       Annotation[] methodAnnotations) {
@@ -325,22 +259,11 @@ public final class Retrofit {
     throw new IllegalArgumentException(builder.toString());
   }
 
-  /**
-   * Returns a {@link Converter} for {@link ResponseBody} to {@code type} from the available
-   * {@linkplain #converterFactories() factories}.
-   *
-   * @throws IllegalArgumentException if no converter available for {@code type}.
-   */
   public <T> Converter<ResponseBody, T> responseBodyConverter(Type type, Annotation[] annotations) {
     return nextResponseBodyConverter(null, type, annotations);
   }
 
-  /**
-   * Returns a {@link Converter} for {@link ResponseBody} to {@code type} from the available
-   * {@linkplain #converterFactories() factories} except {@code skipPast}.
-   *
-   * @throws IllegalArgumentException if no converter available for {@code type}.
-   */
+
   public <T> Converter<ResponseBody, T> nextResponseBodyConverter(
       @Nullable Converter.Factory skipPast, Type type, Annotation[] annotations) {
     Objects.requireNonNull(type, "type == null");
@@ -373,10 +296,7 @@ public final class Retrofit {
     throw new IllegalArgumentException(builder.toString());
   }
 
-  /**
-   * Returns a {@link Converter} for {@code type} to {@link String} from the available
-   * {@linkplain #converterFactories() factories}.
-   */
+
   public <T> Converter<T, String> stringConverter(Type type, Annotation[] annotations) {
     Objects.requireNonNull(type, "type == null");
     Objects.requireNonNull(annotations, "annotations == null");
@@ -395,10 +315,6 @@ public final class Retrofit {
     return (Converter<T, String>) BuiltInConverters.ToStringConverter.INSTANCE;
   }
 
-  /**
-   * The executor used for {@link Callback} methods on a {@link Call}. This may be {@code null},
-   * in which case callbacks should be made synchronously on the background thread.
-   */
   public @Nullable Executor callbackExecutor() {
     return callbackExecutor;
   }
@@ -444,6 +360,7 @@ public final class Retrofit {
 
       // Do not add the default, platform-aware call adapters added by build().
       for (int i = 0,
+          size = retrofit.callAdapterFactories.size() - platform.defaultCallAdapterFactoriesSize();
           size = retrofit.callAdapterFactories.size() - platform.defaultCallAdapterFactoriesSize();
           i < size; i++) {
         callAdapterFactories.add(retrofit.callAdapterFactories.get(i));
@@ -492,56 +409,6 @@ public final class Retrofit {
       return baseUrl(HttpUrl.get(baseUrl));
     }
 
-    /**
-     * Set the API base URL.
-     * <p>
-     * The specified endpoint values (such as with {@link GET @GET}) are resolved against this
-     * value using {@link HttpUrl#resolve(String)}. The behavior of this matches that of an
-     * {@code <a href="">} link on a website resolving on the current URL.
-     * <p>
-     * <b>Base URLs should always end in {@code /}.</b>
-     * <p>
-     * A trailing {@code /} ensures that endpoints values which are relative paths will correctly
-     * append themselves to a base which has path components.
-     * <p>
-     * <b>Correct:</b><br>
-     * Base URL: http://example.com/api/<br>
-     * Endpoint: foo/bar/<br>
-     * Result: http://example.com/api/foo/bar/
-     * <p>
-     * <b>Incorrect:</b><br>
-     * Base URL: http://example.com/api<br>
-     * Endpoint: foo/bar/<br>
-     * Result: http://example.com/foo/bar/
-     * <p>
-     * This method enforces that {@code baseUrl} has a trailing {@code /}.
-     * <p>
-     * <b>Endpoint values which contain a leading {@code /} are absolute.</b>
-     * <p>
-     * Absolute values retain only the host from {@code baseUrl} and ignore any specified path
-     * components.
-     * <p>
-     * Base URL: http://example.com/api/<br>
-     * Endpoint: /foo/bar/<br>
-     * Result: http://example.com/foo/bar/
-     * <p>
-     * Base URL: http://example.com/<br>
-     * Endpoint: /foo/bar/<br>
-     * Result: http://example.com/foo/bar/
-     * <p>
-     * <b>Endpoint values may be a full URL.</b>
-     * <p>
-     * Values which have a host replace the host of {@code baseUrl} and values also with a scheme
-     * replace the scheme of {@code baseUrl}.
-     * <p>
-     * Base URL: http://example.com/<br>
-     * Endpoint: https://github.com/square/retrofit/<br>
-     * Result: https://github.com/square/retrofit/
-     * <p>
-     * Base URL: http://example.com<br>
-     * Endpoint: //github.com/square/retrofit/<br>
-     * Result: http://github.com/square/retrofit/ (note the scheme stays 'http')
-     */
     public Builder baseUrl(HttpUrl baseUrl) {
       Objects.requireNonNull(baseUrl, "baseUrl == null");
       List<String> pathSegments = baseUrl.pathSegments();
@@ -552,28 +419,18 @@ public final class Retrofit {
       return this;
     }
 
-    /** Add converter factory for serialization and deserialization of objects. */
+    // 添加ConverterFactory eg. GsonConverterFactory 可以返回Java Bean对象
     public Builder addConverterFactory(Converter.Factory factory) {
       converterFactories.add(Objects.requireNonNull(factory, "factory == null"));
       return this;
     }
 
-    /**
-     * Add a call adapter factory for supporting service method return types other than {@link
-     * Call}.
-     */
+
     public Builder addCallAdapterFactory(CallAdapter.Factory factory) {
       callAdapterFactories.add(Objects.requireNonNull(factory, "factory == null"));
       return this;
     }
 
-    /**
-     * The executor on which {@link Callback} methods are invoked when returning {@link Call} from
-     * your service method.
-     * <p>
-     * Note: {@code executor} is not used for {@linkplain #addCallAdapterFactory custom method
-     * return types}.
-     */
     public Builder callbackExecutor(Executor executor) {
       this.callbackExecutor = Objects.requireNonNull(executor, "executor == null");
       return this;
@@ -589,10 +446,7 @@ public final class Retrofit {
       return this.converterFactories;
     }
 
-    /**
-     * When calling {@link #create} on the resulting {@link Retrofit} instance, eagerly validate
-     * the configuration of all methods in the supplied interface.
-     */
+    // 是否开启提前校验方法 默认是false
     public Builder validateEagerly(boolean validateEagerly) {
       this.validateEagerly = validateEagerly;
       return this;
@@ -611,11 +465,13 @@ public final class Retrofit {
 
       okhttp3.Call.Factory callFactory = this.callFactory;
       if (callFactory == null) {
+        // 默认的callFactory是 OkHttpClient
         callFactory = new OkHttpClient();
       }
 
       Executor callbackExecutor = this.callbackExecutor;
       if (callbackExecutor == null) {
+          // Android平台下默认是MainThreadExecutor  可以将线程切换回主线程 使用Handler
         callbackExecutor = platform.defaultCallbackExecutor();
       }
 

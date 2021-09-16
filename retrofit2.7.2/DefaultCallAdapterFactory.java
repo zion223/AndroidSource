@@ -33,6 +33,7 @@ final class DefaultCallAdapterFactory extends CallAdapter.Factory {
 
   @Override public @Nullable CallAdapter<?, ?> get(
       Type returnType, Annotation[] annotations, Retrofit retrofit) {
+    // 判断返回类型是否为Call类型 eg. Call<User>          
     if (getRawType(returnType) != Call.class) {
       return null;
     }
@@ -70,12 +71,12 @@ final class DefaultCallAdapterFactory extends CallAdapter.Factory {
 
     @Override public void enqueue(final Callback<T> callback) {
       Objects.requireNonNull(callback, "callback == null");
-
+      // 这里的delegate是OkHttpCall
       delegate.enqueue(new Callback<T>() {
         @Override public void onResponse(Call<T> call, final Response<T> response) {
+          // 默认是使用MainThreadExecutor来执行 将线程切回到前台
           callbackExecutor.execute(() -> {
             if (delegate.isCanceled()) {
-              // Emulate OkHttp's behavior of throwing/delivering an IOException on cancellation.
               callback.onFailure(ExecutorCallbackCall.this, new IOException("Canceled"));
             } else {
               callback.onResponse(ExecutorCallbackCall.this, response);

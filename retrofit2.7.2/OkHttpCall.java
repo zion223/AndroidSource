@@ -97,6 +97,7 @@ final class OkHttpCall<T> implements Call<T> {
       failure = creationFailure;
       if (call == null && failure == null) {
         try {
+          // 通过callFactory创建call对象
           call = rawCall = createRawCall();
         } catch (Throwable t) {
           throwIfFatal(t);
@@ -126,6 +127,7 @@ final class OkHttpCall<T> implements Call<T> {
         }
 
         try {
+          // 回调onResponse()方法
           callback.onResponse(OkHttpCall.this, response);
         } catch (Throwable t) {
           throwIfFatal(t);
@@ -222,6 +224,7 @@ final class OkHttpCall<T> implements Call<T> {
 
     ExceptionCatchingResponseBody catchingBody = new ExceptionCatchingResponseBody(rawBody);
     try {
+      // 通过responseConverter对返回的数据进行转换
       T body = responseConverter.convert(catchingBody);
       return Response.success(body, rawResponse);
     } catch (RuntimeException e) {
