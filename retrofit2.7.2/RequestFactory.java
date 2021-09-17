@@ -261,6 +261,7 @@ final class RequestFactory {
       }
 
       // Get the relative URL path and existing query string, if present.
+      // 检查在注解上是否使用了占位符的形式
       int question = value.indexOf('?');
       if (question != -1 && question < value.length() - 1) {
         // Ensure the query string does not have any named parameters.
@@ -338,6 +339,7 @@ final class RequestFactory {
       return result;
     }
 
+    // 校验方法的注解
     @Nullable
     private ParameterHandler<?> parseParameterAnnotation(
         int p, Type type, Annotation[] annotations, Annotation annotation) {

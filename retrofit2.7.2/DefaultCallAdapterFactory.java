@@ -48,11 +48,13 @@ final class DefaultCallAdapterFactory extends CallAdapter.Factory {
         : callbackExecutor;
 
     return new CallAdapter<Object, Call<?>>() {
-      @Override public Type responseType() {
+      @Override 
+      public Type responseType() {
         return responseType;
       }
 
-      @Override public Call<Object> adapt(Call<Object> call) {
+      @Override 
+      public Call<Object> adapt(Call<Object> call) {
         return executor == null
             ? call
             : new ExecutorCallbackCall<>(executor, call);
@@ -69,9 +71,9 @@ final class DefaultCallAdapterFactory extends CallAdapter.Factory {
       this.delegate = delegate;
     }
 
-    @Override public void enqueue(final Callback<T> callback) {
-      Objects.requireNonNull(callback, "callback == null");
-      // 这里的delegate是OkHttpCall
+    @Override 
+    public void enqueue(final Callback<T> callback) {
+      // 这里的delegate默认是OkHttpCall
       delegate.enqueue(new Callback<T>() {
         @Override public void onResponse(Call<T> call, final Response<T> response) {
           // 默认是使用MainThreadExecutor来执行 将线程切回到前台

@@ -90,6 +90,7 @@ abstract class HttpServiceMethod<ResponseT, ReturnT> extends ServiceMethod<Retur
     // 判断是否是kotlin中的suspend方法
     if (!isKotlinSuspendFunction) {
         // 如果不是kotlin的suspend方法  将callAdapter、responseConverter等传入CallAdapted构造方法
+        // 默认的callAdapter是DefaultCallAdapterFactory中的get()方法获取到的CallAdapter
       return new CallAdapted<>(requestFactory, callFactory, responseConverter, callAdapter);
     } else if (continuationWantsResponse) {
       // 返回类型是Response类型的
@@ -127,6 +128,7 @@ abstract class HttpServiceMethod<ResponseT, ReturnT> extends ServiceMethod<Retur
   private final okhttp3.Call.Factory callFactory;
   private final Converter<ResponseBody, ResponseT> responseConverter;
 
+  // 构造方法
   HttpServiceMethod(RequestFactory requestFactory, okhttp3.Call.Factory callFactory,
       Converter<ResponseBody, ResponseT> responseConverter) {
     this.requestFactory = requestFactory;
@@ -134,7 +136,9 @@ abstract class HttpServiceMethod<ResponseT, ReturnT> extends ServiceMethod<Retur
     this.responseConverter = responseConverter;
   }
 
-  @Override final @Nullable ReturnT invoke(Object[] args) {
+  @Override 
+  final @Nullable ReturnT invoke(Object[] args) {
+    // 创建okHttpCall
     Call<ResponseT> call = new OkHttpCall<>(requestFactory, args, callFactory, responseConverter);
     return adapt(call, args);
   }
@@ -155,11 +159,14 @@ abstract class HttpServiceMethod<ResponseT, ReturnT> extends ServiceMethod<Retur
     }
 
     @Override protected ReturnT adapt(Call<ResponseT> call, Object[] args) {
+      // 这里是DefaultCallAdapterFactory中的get()方法返回的匿名内部类的adapt()方法
+      // 返回的是 ExecutorCallbackCall
       return callAdapter.adapt(call);
     }
   }
 
-  // kotlin的suspend方法并且返回值是Response类型的
+  // kotlin的suspend方法并且返回值是Response类型的  
+  // suspend fun login(): Response<User>
   static final class SuspendForResponse<ResponseT> extends HttpServiceMethod<ResponseT, Object> {
     private final CallAdapter<ResponseT, Call<ResponseT>> callAdapter;
 
@@ -186,6 +193,7 @@ abstract class HttpServiceMethod<ResponseT, ReturnT> extends ServiceMethod<Retur
     }
   }
 
+  //  suspend fun login(): User
   static final class SuspendForBody<ResponseT> extends HttpServiceMethod<ResponseT, Object> {
     private final CallAdapter<ResponseT, Call<ResponseT>> callAdapter;
     private final boolean isNullable;
@@ -204,14 +212,6 @@ abstract class HttpServiceMethod<ResponseT, ReturnT> extends ServiceMethod<Retur
       //noinspection unchecked Checked by reflection inside RequestFactory.
       Continuation<ResponseT> continuation = (Continuation<ResponseT>) args[args.length - 1];
 
-      // Calls to OkHttp Call.enqueue() like those inside await and awaitNullable can sometimes
-      // invoke the supplied callback with an exception before the invoking stack frame can return.
-      // Coroutines will intercept the subsequent invocation of the Continuation and throw the
-      // exception synchronously. A Java Proxy cannot throw checked exceptions without them being
-      // declared on the interface method. To avoid the synchronous checked exception being wrapped
-      // in an UndeclaredThrowableException, it is intercepted and supplied to a helper which will
-      // force suspension to occur so that it can be instead delivered to the continuation to
-      // bypass this restriction.
       try {
         return isNullable
             ? KotlinExtensions.awaitNullable(call, continuation)

@@ -53,11 +53,13 @@ final class OkHttpCall<T> implements Call<T> {
   }
 
   @SuppressWarnings("CloneDoesntCallSuperClone") // We are a final type & this saves clearing state.
-  @Override public OkHttpCall<T> clone() {
+  @Override 
+  public OkHttpCall<T> clone() {
     return new OkHttpCall<>(requestFactory, args, callFactory, responseConverter);
   }
 
-  @Override public synchronized Request request() {
+  @Override 
+  public synchronized Request request() {
     okhttp3.Call call = rawCall;
     if (call != null) {
       return call.request();
@@ -83,7 +85,8 @@ final class OkHttpCall<T> implements Call<T> {
     }
   }
 
-  @Override public void enqueue(final Callback<T> callback) {
+  @Override 
+  public void enqueue(final Callback<T> callback) {
     Objects.requireNonNull(callback, "callback == null");
 
     okhttp3.Call call;

@@ -85,12 +85,10 @@ public final class Retrofit {
    * Create an implementation of the API endpoints defined by the {@code service} interface.
    * <p>
    * For example:
-   * <pre>
    * public interface CategoryService {
    *   @POST("category/{cat}/")
    *   Call<List<Item>> categoryList(@Path("cat") String a, @Query("page") int b);
    * }
-   * </pre>
    */
   @SuppressWarnings("unchecked") // Single-interface proxy creation guarded by parameter safety.
   public <T> T create(final Class<T> service) {
@@ -101,10 +99,10 @@ public final class Retrofit {
           private final Platform platform = Platform.get();
           private final Object[] emptyArgs = new Object[0];
 
-          @Override public @Nullable Object invoke(Object proxy, Method method,
+          @Override 
+          public @Nullable Object invoke(Object proxy, Method method,
               @Nullable Object[] args) throws Throwable {
-            // If the method is a method from Object then defer to normal invocation.
-            // 判断要代理的方法是不是Object中的方法 eg. equals()、hashCode()、toString()
+            // 判断要代理的方法是不是Object类中的方法 eg. equals()、hashCode()、toString()
             if (method.getDeclaringClass() == Object.class) {
               return method.invoke(this, args);
             }
@@ -191,6 +189,7 @@ public final class Retrofit {
 
     int start = callAdapterFactories.indexOf(skipPast) + 1;
     for (int i = start, count = callAdapterFactories.size(); i < count; i++) {
+      // 获取CallAdapter
       CallAdapter<?, ?> adapter = callAdapterFactories.get(i).get(returnType, annotations, this);
       if (adapter != null) {
         return adapter;
@@ -465,26 +464,24 @@ public final class Retrofit {
 
       okhttp3.Call.Factory callFactory = this.callFactory;
       if (callFactory == null) {
-        // 默认的callFactory是 OkHttpClient
+        // 如果不指定callFactory那么默认的callFactory是 OkHttpClient
         callFactory = new OkHttpClient();
       }
 
       Executor callbackExecutor = this.callbackExecutor;
       if (callbackExecutor == null) {
-          // Android平台下默认是MainThreadExecutor  可以将线程切换回主线程 使用Handler
+          // Android平台下默认是MainThreadExecutor  可以将线程切换回主线程 使用Handler.post()形式
         callbackExecutor = platform.defaultCallbackExecutor();
       }
 
-      // Make a defensive copy of the adapters and add the default Call adapter.
+      // 添加callAdapterFactory
       List<CallAdapter.Factory> callAdapterFactories = new ArrayList<>(this.callAdapterFactories);
       callAdapterFactories.addAll(platform.defaultCallAdapterFactories(callbackExecutor));
 
-      // Make a defensive copy of the converters.
+      // 添加converterFactory
       List<Converter.Factory> converterFactories = new ArrayList<>(
           1 + this.converterFactories.size() + platform.defaultConverterFactoriesSize());
 
-      // Add the built-in converter factory first. This prevents overriding its behavior but also
-      // ensures correct behavior when using converters that consume all types.
       converterFactories.add(new BuiltInConverters());
       converterFactories.addAll(this.converterFactories);
       converterFactories.addAll(platform.defaultConverterFactories());
