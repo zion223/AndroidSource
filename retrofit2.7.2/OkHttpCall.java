@@ -122,6 +122,7 @@ final class OkHttpCall<T> implements Call<T> {
       @Override public void onResponse(okhttp3.Call call, okhttp3.Response rawResponse) {
         Response<T> response;
         try {
+          // 解析response
           response = parseResponse(rawResponse);
         } catch (Throwable e) {
           throwIfFatal(e);
@@ -144,6 +145,7 @@ final class OkHttpCall<T> implements Call<T> {
 
       private void callFailure(Throwable e) {
         try {
+          // 回调onFailure()方法
           callback.onFailure(OkHttpCall.this, e);
         } catch (Throwable t) {
           throwIfFatal(t);
@@ -194,6 +196,7 @@ final class OkHttpCall<T> implements Call<T> {
   }
 
   private okhttp3.Call createRawCall() throws IOException {
+    // callFactory是OkHttpClient 返回的是okhttp3的call
     okhttp3.Call call = callFactory.newCall(requestFactory.create(args));
     if (call == null) {
       throw new NullPointerException("Call.Factory returned null.");
@@ -210,6 +213,11 @@ final class OkHttpCall<T> implements Call<T> {
         .build();
 
     int code = rawResponse.code();
+    // 状态码1xx: 临时性消息
+    // 状态码2xx: 成功
+    // 状态码3xx: 重定向
+    // 状态码4xx: 客户端错误
+    // 状态码5xx: 服务器错误
     if (code < 200 || code >= 300) {
       try {
         // Buffer the entire body to avoid future I/O.
@@ -220,6 +228,7 @@ final class OkHttpCall<T> implements Call<T> {
       }
     }
 
+    // 204和205状态码表示成功 但是没有返回的实体内容
     if (code == 204 || code == 205) {
       rawBody.close();
       return Response.success(null, rawResponse);

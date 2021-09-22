@@ -97,7 +97,7 @@ abstract class HttpServiceMethod<ResponseT, ReturnT> extends ServiceMethod<Retur
       return (HttpServiceMethod<ResponseT, ReturnT>) new SuspendForResponse<>(requestFactory,
           callFactory, responseConverter, (CallAdapter<ResponseT, Call<ResponseT>>) callAdapter);
     } else {
-      // 返回类型是Java Bean对象
+      // 返回类型是实体对象
       return (HttpServiceMethod<ResponseT, ReturnT>) new SuspendForBody<>(requestFactory,
           callFactory, responseConverter, (CallAdapter<ResponseT, Call<ResponseT>>) callAdapter,
           continuationBodyNullable);
@@ -138,7 +138,7 @@ abstract class HttpServiceMethod<ResponseT, ReturnT> extends ServiceMethod<Retur
 
   @Override 
   final @Nullable ReturnT invoke(Object[] args) {
-    // 创建okHttpCall
+    // 创建OkHttpCall对象
     Call<ResponseT> call = new OkHttpCall<>(requestFactory, args, callFactory, responseConverter);
     return adapt(call, args);
   }
