@@ -27,6 +27,7 @@ import java.net.URI
 object NullProxySelector : ProxySelector() {
   override fun select(uri: URI?): List<Proxy> {
     requireNotNull(uri) { "uri must not be null" }
+    // DIRECT方式
     return listOf(Proxy.NO_PROXY)
   }
 

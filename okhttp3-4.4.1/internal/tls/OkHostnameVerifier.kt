@@ -36,6 +36,7 @@ object OkHostnameVerifier : HostnameVerifier {
 
   override fun verify(host: String, session: SSLSession): Boolean {
     return try {
+      // 验证第一个证书  证书链的第一个证书是网站的证书
       verify(host, session.peerCertificates[0] as X509Certificate)
     } catch (_: SSLException) {
       false

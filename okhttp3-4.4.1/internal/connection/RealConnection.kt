@@ -515,12 +515,14 @@ class RealConnection(
    */
   internal fun isEligible(address: Address, routes: List<Route>?): Boolean {
     // If this connection is not accepting new exchanges, we're done.
+    // 请求数不超过限制
     if (calls.size >= allocationLimit || noNewExchanges) return false
 
     // If the non-host fields of the address don't overlap, we're done.
     if (!this.route.address.equalsNonHost(address)) return false
 
     // If the host exactly matches, we're done: this connection can carry the address.
+    // 主机名一样
     if (address.url.host == this.route().address.url.host) {
       return true // This connection is a perfect match.
     }
@@ -530,13 +532,16 @@ class RealConnection(
     // https://hpbn.co/optimizing-application-delivery/#eliminate-domain-sharding
     // https://daniel.haxx.se/blog/2016/08/18/http2-connection-coalescing/
 
+    //  连接合并
     // 1. This connection must be HTTP/2.
     if (http2Connection == null) return false
 
     // 2. The routes must share an IP address.
+    // 路由必须是相同的IP地址
     if (routes == null || !routeMatchesAny(routes)) return false
 
     // 3. This connection's server certificate's must cover the new host.
+    // 证书一致
     if (address.hostnameVerifier !== OkHostnameVerifier) return false
     if (!supportsUrl(address.url)) return false
 

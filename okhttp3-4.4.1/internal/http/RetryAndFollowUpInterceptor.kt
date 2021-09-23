@@ -54,6 +54,7 @@ class RetryAndFollowUpInterceptor(private val client: OkHttpClient) : Intercepto
 
   @Throws(IOException::class)
   override fun intercept(chain: Interceptor.Chain): Response {
+    
     val realChain = chain as RealInterceptorChain
     var request = chain.request
     val call = realChain.call
@@ -61,6 +62,7 @@ class RetryAndFollowUpInterceptor(private val client: OkHttpClient) : Intercepto
     var priorResponse: Response? = null
     var newExchangeFinder = true
     while (true) {
+      // ========== 前置工作 开始 ===============
       call.enterNetworkInterceptorExchange(request, newExchangeFinder)
 
       var response: Response
@@ -71,7 +73,9 @@ class RetryAndFollowUpInterceptor(private val client: OkHttpClient) : Intercepto
         }
 
         try {
-          response = realChain.proceed(request)
+          // ========== 前置工作 结束 ============
+          response = realChain.proceed(request) // 中置工作
+          // =========== 后置工作 开始 ===========
           newExchangeFinder = true
         } catch (e: RouteException) {
           // The attempt to connect via a route failed. The request will not have been sent.
@@ -99,6 +103,7 @@ class RetryAndFollowUpInterceptor(private val client: OkHttpClient) : Intercepto
         }
 
         val exchange = call.interceptorScopedExchange
+        // 是否需要重定向请求
         val followUp = followUpRequest(response, exchange)
 
         if (followUp == null) {
@@ -106,12 +111,14 @@ class RetryAndFollowUpInterceptor(private val client: OkHttpClient) : Intercepto
             call.timeoutEarlyExit()
           }
           closeActiveExchange = false
+          // 返回结果
           return response
         }
 
         val followUpBody = followUp.body
         if (followUpBody != null && followUpBody.isOneShot()) {
           closeActiveExchange = false
+          // 返回结果
           return response
         }
 
@@ -120,10 +127,11 @@ class RetryAndFollowUpInterceptor(private val client: OkHttpClient) : Intercepto
         if (++followUpCount > MAX_FOLLOW_UPS) {
           throw ProtocolException("Too many follow-up requests: $followUpCount")
         }
-
+        // 需要重定向 把request重新赋值
         request = followUp
         priorResponse = response
       } finally {
+        // ========= 后置工作 结束 ==========
         call.exitNetworkInterceptorExchange(closeActiveExchange)
       }
     }

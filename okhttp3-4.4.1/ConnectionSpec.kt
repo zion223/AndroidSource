@@ -343,6 +343,7 @@ class ConnectionSpec internal constructor(
         .build()
 
     /** Unencrypted, unauthenticated connections for `http:` URLs. */
+    /** 明文传输Http报文 不加密传输 */
     @JvmField
     val CLEARTEXT = Builder(false).build()
   }

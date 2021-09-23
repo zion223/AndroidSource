@@ -79,7 +79,7 @@ class CacheInterceptor(internal val cache: Cache?) : Interceptor {
 
     var networkResponse: Response? = null
     try {
-      networkResponse = chain.proceed(networkRequest)
+      networkResponse = chain.proceed(networkRequest) // ========== 中置工作 =============
     } finally {
       // If we're crashing on I/O or otherwise, don't leak the cache body.
       if (networkResponse == null && cacheCandidate != null) {
@@ -118,12 +118,14 @@ class CacheInterceptor(internal val cache: Cache?) : Interceptor {
     if (cache != null) {
       if (response.promisesBody() && CacheStrategy.isCacheable(response, networkRequest)) {
         // Offer this request to the cache.
+        // 放入缓存
         val cacheRequest = cache.put(response)
         return cacheWritingResponse(cacheRequest, response)
       }
 
       if (HttpMethod.invalidatesCache(networkRequest.method)) {
         try {
+          // 移除缓存
           cache.remove(networkRequest)
         } catch (_: IOException) {
           // The cache cannot be written.

@@ -73,6 +73,7 @@ class ExchangeFinder(
     chain: RealInterceptorChain
   ): ExchangeCodec {
     try {
+      // 找到健康的连接
       val resultConnection = findHealthyConnection(
           connectTimeout = chain.connectTimeoutMillis,
           readTimeout = chain.readTimeoutMillis,
@@ -81,6 +82,7 @@ class ExchangeFinder(
           connectionRetryEnabled = client.retryOnConnectionFailure,
           doExtensiveHealthChecks = chain.request.method != "GET"
       )
+      // 创建codec
       return resultConnection.newCodec(client, chain)
     } catch (e: RouteException) {
       trackFailure(e.lastConnectException)
@@ -114,6 +116,7 @@ class ExchangeFinder(
       )
 
       // Confirm that the connection is good. If it isn't, take it out of the pool and start again.
+      // 判断连接是否健康
       if (!candidate.isHealthy(doExtensiveHealthChecks)) {
         candidate.noNewExchanges()
         continue
@@ -141,6 +144,7 @@ class ExchangeFinder(
     var releasedConnection: RealConnection?
     val toClose: Socket?
     synchronized(connectionPool) {
+      // 判断call是否被取消
       if (call.isCanceled()) throw IOException("Canceled")
 
       val callConnection = call.connection // changes within this overall method
@@ -164,7 +168,8 @@ class ExchangeFinder(
         connectionShutdownCount = 0
         otherFailureCount = 0
 
-        // Attempt to get a connection from the pool.
+        // Attempt to get a connection from the pool. 
+        // 尝试从连接池拿连接 不多路复用
         if (connectionPool.callAcquirePooledConnection(address, call, null, false)) {
           foundPooledConnection = true
           result = call.connection
@@ -207,6 +212,7 @@ class ExchangeFinder(
         // Now that we have a set of IP addresses, make another attempt at getting a connection from
         // the pool. This could match due to connection coalescing.
         routes = routeSelection!!.routes
+        // 再次尝试拿取连接 多一个routes参数
         if (connectionPool.callAcquirePooledConnection(address, call, routes, false)) {
           foundPooledConnection = true
           result = call.connection

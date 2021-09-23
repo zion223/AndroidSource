@@ -169,7 +169,7 @@ class RealCall(
 
   @Throws(IOException::class)
   internal fun getResponseWithInterceptorChain(): Response {
-    // Build a full stack of interceptors.
+    // 拦截器集合
     val interceptors = mutableListOf<Interceptor>()
     interceptors += client.interceptors
     interceptors += RetryAndFollowUpInterceptor(client)
@@ -226,9 +226,10 @@ class RealCall(
     }
 
     if (newExchangeFinder) {
+      // 创建ExchangeFinder
       this.exchangeFinder = ExchangeFinder(
           connectionPool,
-          createAddress(request.url),
+          createAddress(request.url),// 创建Address对象 主机名和端口信息
           this,
           eventListener
       )
@@ -242,6 +243,7 @@ class RealCall(
       check(exchange == null)
     }
 
+    // 编码解码器
     val codec = exchangeFinder!!.find(client, chain)
     val result = Exchange(this, eventListener, exchangeFinder!!, codec)
     this.interceptorScopedExchange = result

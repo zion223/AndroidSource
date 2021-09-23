@@ -46,6 +46,7 @@ interface Dns {
     private class DnsSystem : Dns {
       override fun lookup(hostname: String): List<InetAddress> {
         try {
+          // DNS寻址  通过域名来查找Ip地址
           return InetAddress.getAllByName(hostname).toList()
         } catch (e: NullPointerException) {
           throw UnknownHostException("Broken system behaviour for dns lookup of $hostname").apply {
