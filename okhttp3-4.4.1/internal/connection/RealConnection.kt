@@ -77,11 +77,11 @@ class RealConnection(
 
   // The fields below are initialized by connect() and never reassigned.
 
-  /** The low-level TCP socket. */
+  /** Tips!!!! The low-level TCP socket. */
   private var rawSocket: Socket? = null
 
   /**
-   * The application layer socket. Either an [SSLSocket] layered over [rawSocket], or [rawSocket]
+   *  Tips!!!! The application layer socket. Either an [SSLSocket] layered over [rawSocket], or [rawSocket]
    * itself if this connection does not use SSL.
    */
   private var socket: Socket? = null
@@ -185,7 +185,8 @@ class RealConnection(
 
     while (true) {
       try {
-        if (route.requiresTunnel()) {
+        if (route.requiresTunnel()) { // HTTP转HTTPS
+          // 创建Http Tunnel
           connectTunnel(connectTimeout, readTimeout, writeTimeout, call, eventListener)
           if (rawSocket == null) {
             // We were unable to connect the tunnel but properly closed down our resources.
@@ -194,6 +195,7 @@ class RealConnection(
         } else {
           connectSocket(connectTimeout, readTimeout, call, eventListener)
         }
+        // 确定连接协议
         establishProtocol(connectionSpecSelector, pingIntervalMillis, call, eventListener)
         eventListener.connectEnd(call, route.socketAddress, route.proxy, protocol)
         break
@@ -275,6 +277,7 @@ class RealConnection(
       Proxy.Type.DIRECT, Proxy.Type.HTTP -> address.socketFactory.createSocket()!!
       else -> Socket(proxy)
     }
+    // tcp连接
     this.rawSocket = rawSocket
 
     eventListener.connectStart(call, route.socketAddress, proxy)
@@ -309,22 +312,25 @@ class RealConnection(
     eventListener: EventListener
   ) {
     if (route.address.sslSocketFactory == null) {
+      // 不需要加密连接
       if (Protocol.H2_PRIOR_KNOWLEDGE in route.address.protocols) {
+        // 明文 HTTP2连接
         socket = rawSocket
         protocol = Protocol.H2_PRIOR_KNOWLEDGE
         startHttp2(pingIntervalMillis)
         return
       }
-
+      // 普通HTTP1.1协议连接
       socket = rawSocket
       protocol = Protocol.HTTP_1_1
       return
     }
 
     eventListener.secureConnectStart(call)
+    // 加密连接
     connectTls(connectionSpecSelector)
     eventListener.secureConnectEnd(call, handshake)
-
+    // 加密的HTTP2连接
     if (protocol === Protocol.HTTP_2) {
       startHttp2(pingIntervalMillis)
     }
@@ -354,6 +360,7 @@ class RealConnection(
     var sslSocket: SSLSocket? = null
     try {
       // Create the wrapper over the connected socket.
+      // 在rawSocket基础上在建立一层ssl连接
       sslSocket = sslSocketFactory!!.createSocket(
           rawSocket, address.url.host, address.url.port, true /* autoClose */) as SSLSocket
 
@@ -368,7 +375,7 @@ class RealConnection(
       // block for session establishment
       val sslSocketSession = sslSocket.session
       val unverifiedHandshake = sslSocketSession.handshake()
-
+      // 验证连接
       // Verify that the socket's certificates are acceptable for the target host.
       if (!address.hostnameVerifier!!.verify(address.url.host, sslSocketSession)) {
         val peerCertificates = unverifiedHandshake.peerCertificates
@@ -405,6 +412,7 @@ class RealConnection(
       } else {
         null
       }
+      // 这里给socket赋值
       socket = sslSocket
       source = sslSocket.source().buffer()
       sink = sslSocket.sink().buffer()
@@ -532,12 +540,12 @@ class RealConnection(
     // https://hpbn.co/optimizing-application-delivery/#eliminate-domain-sharding
     // https://daniel.haxx.se/blog/2016/08/18/http2-connection-coalescing/
 
-    //  连接合并
+    //  HTTP/2 连接合并
     // 1. This connection must be HTTP/2.
     if (http2Connection == null) return false
 
     // 2. The routes must share an IP address.
-    // 路由必须是相同的IP地址
+    // 路由必须共享IP地址
     if (routes == null || !routeMatchesAny(routes)) return false
 
     // 3. This connection's server certificate's must cover the new host.

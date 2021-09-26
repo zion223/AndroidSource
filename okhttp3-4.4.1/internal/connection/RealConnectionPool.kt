@@ -77,6 +77,7 @@ class RealConnectionPool(
 
     for (connection in connections) {
       if (requireMultiplexed && !connection.isMultiplexed) continue
+      // 判断连接是否合适
       if (!connection.isEligible(address, routes)) continue
       // 获取到连接
       call.acquireConnectionNoEvents(connection)

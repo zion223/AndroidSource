@@ -78,6 +78,7 @@ class RealInterceptorChain(
   override fun request(): Request = request
 
   @Throws(IOException::class)
+  // 执行调用链
   override fun proceed(request: Request): Response {
     check(index < interceptors.size)
 

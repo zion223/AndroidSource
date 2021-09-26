@@ -140,9 +140,11 @@ class RouteSelector(
     val socketHost: String
     val socketPort: Int
     if (proxy.type() == Proxy.Type.DIRECT || proxy.type() == Proxy.Type.SOCKS) {
+      // 直连方式
       socketHost = address.url.host
       socketPort = address.url.port
     } else {
+      // 代理方式
       val proxyAddress = proxy.address()
       require(proxyAddress is InetSocketAddress) {
         "Proxy.address() is not an InetSocketAddress: ${proxyAddress.javaClass}"

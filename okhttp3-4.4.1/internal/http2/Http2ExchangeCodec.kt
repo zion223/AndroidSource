@@ -73,6 +73,7 @@ class Http2ExchangeCodec(
 
     val hasRequestBody = request.body != null
     val requestHeaders = http2HeadersList(request)
+    // 通过stream方式
     stream = http2Connection.newStream(requestHeaders, hasRequestBody)
     // We may have been asked to cancel while creating the new stream and sending the request
     // headers, but there was still no stream to close.

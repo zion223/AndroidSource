@@ -56,6 +56,8 @@ class BridgeInterceptor(private val cookieJar: CookieJar) : Interceptor {
     }
 
     if (userRequest.header("Host") == null) {
+      // 添加 header
+      // Host: api.github.com
       requestBuilder.header("Host", userRequest.url.toHostHeader())
     }
 

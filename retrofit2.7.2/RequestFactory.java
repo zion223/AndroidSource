@@ -93,6 +93,7 @@ final class RequestFactory {
     isKotlinSuspendFunction = builder.isKotlinSuspendFunction;
   }
 
+  // 创建Request
   okhttp3.Request create(Object[] args) throws IOException {
     @SuppressWarnings("unchecked") // It is an error to invoke a method with the wrong arg types.
     ParameterHandler<Object>[] handlers = (ParameterHandler<Object>[]) parameterHandlers;

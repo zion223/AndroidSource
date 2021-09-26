@@ -168,6 +168,7 @@ class RealCall(
   }
 
   @Throws(IOException::class)
+  // 核心方法
   internal fun getResponseWithInterceptorChain(): Response {
     // 拦截器集合
     val interceptors = mutableListOf<Interceptor>()
@@ -194,6 +195,7 @@ class RealCall(
 
     var calledNoMoreExchanges = false
     try {
+      // 执行调用链
       val response = chain.proceed(originalRequest)
       if (isCanceled()) {
         response.closeQuietly()
@@ -414,11 +416,13 @@ class RealCall(
     interceptorScopedExchange = null
   }
 
+  // 创建地址
   private fun createAddress(url: HttpUrl): Address {
     var sslSocketFactory: SSLSocketFactory? = null
     var hostnameVerifier: HostnameVerifier? = null
     var certificatePinner: CertificatePinner? = null
     if (url.isHttps) {
+      // 判断url是否是Https类型的
       sslSocketFactory = client.sslSocketFactory
       hostnameVerifier = client.hostnameVerifier
       certificatePinner = client.certificatePinner
@@ -503,6 +507,7 @@ class RealCall(
         try {
           val response = getResponseWithInterceptorChain()
           signalledCallback = true
+          // 回调接口的onResponse()方法
           responseCallback.onResponse(this@RealCall, response)
         } catch (e: IOException) {
           if (signalledCallback) {

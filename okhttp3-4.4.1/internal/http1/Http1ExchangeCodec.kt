@@ -115,6 +115,7 @@ class Http1ExchangeCodec(
    * the proper value.
    */
   override fun writeRequestHeaders(request: Request) {
+    // requestLine eg. GET /user HTTP/1.1
     val requestLine = RequestLine.get(request, connection.route().proxy.type())
     writeRequest(request.headers, requestLine)
   }
@@ -175,13 +176,14 @@ class Http1ExchangeCodec(
     }
 
     try {
+      // 解析相应报文 返回的是 Http协议版本号 状态码 相应报文body
       val statusLine = StatusLine.parse(readHeaderLine())
 
       val responseBuilder = Response.Builder()
           .protocol(statusLine.protocol)
           .code(statusLine.code)
           .message(statusLine.message)
-          .headers(readHeaders())
+          .headers(readHeaders()) // 读header
 
       return when {
         expectContinue && statusLine.code == HTTP_CONTINUE -> {

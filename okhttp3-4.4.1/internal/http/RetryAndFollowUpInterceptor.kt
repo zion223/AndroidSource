@@ -82,6 +82,7 @@ class RetryAndFollowUpInterceptor(private val client: OkHttpClient) : Intercepto
           if (!recover(e.lastConnectException, call, request, requestSendStarted = false)) {
             throw e.firstConnectException
           }
+          // newExchangeFinder置为false
           newExchangeFinder = false
           continue
         } catch (e: IOException) {
@@ -89,6 +90,7 @@ class RetryAndFollowUpInterceptor(private val client: OkHttpClient) : Intercepto
           if (!recover(e, call, request, requestSendStarted = e !is ConnectionShutdownException)) {
             throw e
           }
+          // newExchangeFinder置为false
           newExchangeFinder = false
           continue
         }

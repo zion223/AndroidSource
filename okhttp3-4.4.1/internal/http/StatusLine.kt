@@ -64,10 +64,13 @@ class StatusLine(
           throw ProtocolException("Unexpected status line: $statusLine")
         }
         val httpMinorVersion = statusLine[7] - '0'
+        // HTTP相应状态码 从第9位开始读
         codeStart = 9
         protocol = if (httpMinorVersion == 0) {
+          // HTTP/1.0 协议
           Protocol.HTTP_1_0
         } else if (httpMinorVersion == 1) {
+          // HTTP/1.1 协议
           Protocol.HTTP_1_1
         } else {
           throw ProtocolException("Unexpected status line: $statusLine")
@@ -99,7 +102,7 @@ class StatusLine(
         }
         message = statusLine.substring(codeStart + 4)
       }
-
+      // HTTP协议版本 状态码 相应报文内容
       return StatusLine(protocol, code, message)
     }
   }

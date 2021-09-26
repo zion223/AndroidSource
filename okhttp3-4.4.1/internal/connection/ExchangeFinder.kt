@@ -149,8 +149,10 @@ class ExchangeFinder(
 
       val callConnection = call.connection // changes within this overall method
       releasedConnection = callConnection
+      // 1. 要关闭的Socket
       toClose = if (callConnection != null && (callConnection.noNewExchanges ||
               !sameHostAndPort(callConnection.route().address.url))) {
+        // 将连接release                
         call.releaseConnectionNoEvents()
       } else {
         null
@@ -158,6 +160,7 @@ class ExchangeFinder(
 
       if (call.connection != null) {
         // We had an already-allocated connection and it's good.
+        // 有可用的连接
         result = call.connection
         releasedConnection = null
       }
@@ -169,7 +172,7 @@ class ExchangeFinder(
         otherFailureCount = 0
 
         // Attempt to get a connection from the pool. 
-        // 尝试从连接池拿连接 不多路复用
+        // 2. 尝试从连接池拿连接 非多路复用
         if (connectionPool.callAcquirePooledConnection(address, call, null, false)) {
           foundPooledConnection = true
           result = call.connection
@@ -193,6 +196,7 @@ class ExchangeFinder(
     }
 
     // If we need a route selection, make one. This is a blocking operation.
+    // Selector -> Selection(val routes: List<Route>) -> Route 层级遍历
     var newRouteSelection = false
     if (selectedRoute == null && (routeSelection == null || !routeSelection!!.hasNext())) {
       var localRouteSelector = routeSelector
@@ -201,6 +205,7 @@ class ExchangeFinder(
         this.routeSelector = localRouteSelector
       }
       newRouteSelection = true
+      // 查找下一个RouteSelection
       routeSelection = localRouteSelector.next()
     }
 
@@ -211,8 +216,10 @@ class ExchangeFinder(
       if (newRouteSelection) {
         // Now that we have a set of IP addresses, make another attempt at getting a connection from
         // the pool. This could match due to connection coalescing.
+
+        // RouteSelector > Selection(routeSelection) > Route
         routes = routeSelection!!.routes
-        // 再次尝试拿取连接 多一个routes参数
+        // 3. 再次尝试拿取连接 可多路复用
         if (connectionPool.callAcquirePooledConnection(address, call, routes, false)) {
           foundPooledConnection = true
           result = call.connection
@@ -238,6 +245,7 @@ class ExchangeFinder(
     }
 
     // Do TCP + TLS handshakes. This is a blocking operation.
+    // 4. 手动创建连接 TCP和TLS握手
     result!!.connect(
         connectTimeout,
         readTimeout,
@@ -254,16 +262,20 @@ class ExchangeFinder(
       connectingConnection = null
       // Last attempt at connection coalescing, which only occurs if we attempted multiple
       // concurrent connections to the same host.
+      // 5. 只多路复用模式再次尝试获取连接
       if (connectionPool.callAcquirePooledConnection(address, call, routes, true)) {
         // We lost the race! Close the connection we created and return the pooled connection.
+        // 销毁第四步刚创建的socket 
         result!!.noNewExchanges = true
         socket = result!!.socket()
         result = call.connection
 
         // It's possible for us to obtain a coalesced connection that is immediately unhealthy. In
         // that case we will retry the route we just successfully connected with.
+        // 暂时缓存，下一次创建连接时 优先使用
         nextRouteToTry = selectedRoute
       } else {
+        // 放入连接池
         connectionPool.put(result!!)
         call.acquireConnectionNoEvents(result!!)
       }

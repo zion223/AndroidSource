@@ -32,11 +32,12 @@ class CallServerInterceptor(private val forWebSocket: Boolean) : Interceptor {
     val request = realChain.request
     val requestBody = request.body
     val sentRequestMillis = System.currentTimeMillis()
-
+    // 发送请求头
     exchange.writeRequestHeaders(request)
 
     var invokeStartEvent = true
     var responseBuilder: Response.Builder? = null
+    // 需要有请求body Method不是GET或者HEAD
     if (HttpMethod.permitsRequestBody(request.method) && requestBody != null) {
       // If there's a "Expect: 100-continue" header on the request, wait for a "HTTP/1.1 100
       // Continue" response before transmitting the request body. If we don't get that, return
@@ -55,11 +56,14 @@ class CallServerInterceptor(private val forWebSocket: Boolean) : Interceptor {
           requestBody.writeTo(bufferedRequestBody)
         } else {
           // Write the request body if the "Expect: 100-continue" expectation was met.
+          // 创建请求体 如果服务器返回的状态码是 HTTP_CONTINUE 100
           val bufferedRequestBody = exchange.createRequestBody(request, false).buffer()
+          // 发送请求
           requestBody.writeTo(bufferedRequestBody)
           bufferedRequestBody.close()
         }
       } else {
+        // 状态码返回的不是100
         exchange.noRequestBody()
         if (!exchange.connection.isMultiplexed) {
           // If the "Expect: 100-continue" expectation wasn't met, prevent the HTTP/1 connection
@@ -76,6 +80,7 @@ class CallServerInterceptor(private val forWebSocket: Boolean) : Interceptor {
       exchange.finishRequest()
     }
     if (responseBuilder == null) {
+      // 读响应头
       responseBuilder = exchange.readResponseHeaders(expectContinue = false)!!
       if (invokeStartEvent) {
         exchange.responseHeadersStart()
@@ -90,6 +95,7 @@ class CallServerInterceptor(private val forWebSocket: Boolean) : Interceptor {
         .build()
     var code = response.code
     if (code == 100) {
+      // 服务器返回的是 100
       // Server sent a 100-continue even though we did not request one. Try again to read the actual
       // response status.
       responseBuilder = exchange.readResponseHeaders(expectContinue = false)!!
@@ -108,13 +114,14 @@ class CallServerInterceptor(private val forWebSocket: Boolean) : Interceptor {
     exchange.responseHeadersEnd(response)
 
     response = if (forWebSocket && code == 101) {
+      // 需要切换协议
       // Connection is upgrading, but we need to ensure interceptors see a non-null response body.
       response.newBuilder()
           .body(EMPTY_RESPONSE)
           .build()
     } else {
       response.newBuilder()
-          .body(exchange.openResponseBody(response))
+          .body(exchange.openResponseBody(response)) // 添加body 
           .build()
     }
     if ("close".equals(response.request.header("Connection"), ignoreCase = true) ||
