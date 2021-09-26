@@ -99,24 +99,30 @@ class CacheStrategy internal constructor(
         this.sentRequestMillis = cacheResponse.sentRequestAtMillis
         this.receivedResponseMillis = cacheResponse.receivedResponseAtMillis
         val headers = cacheResponse.headers
+        // 解析缓存的响应header
         for (i in 0 until headers.size) {
           val fieldName = headers.name(i)
           val value = headers.value(i)
           when {
+            // Date 通用 HTTP 报头包含在该消息起源的日期和时间。eg. Date: Wed, 21 Oct 2015 07:28:00 GMT 
             fieldName.equals("Date", ignoreCase = true) -> {
               servedDate = value.toHttpDateOrNull()
               servedDateString = value
             }
+            // Expires 标头包含的日期/时间之后，响应被视为失效。 eg. Expires: Wed, 21 Oct 2015 07:28:00 GMT
             fieldName.equals("Expires", ignoreCase = true) -> {
               expires = value.toHttpDateOrNull()
             }
+            // Last-Modified 响应HTTP报头包含在其原始服务器认为该资源的最后修改日期和时间 eg. Last-Modified: Wed, 21 Oct 2015 07:28:00 GMT 
             fieldName.equals("Last-Modified", ignoreCase = true) -> {
               lastModified = value.toHttpDateOrNull()
               lastModifiedString = value
             }
+            // ETag HTTP 响应报头为资源的特定版本的标识符  eg. ETag: "33a64df551425fcc55e4d42a148795d9f25f89d4"  ETag: W/"0815"
             fieldName.equals("ETag", ignoreCase = true) -> {
               etag = value
             }
+            // Age header 包含以秒计的对象一直在代理缓存的时间。 Age: 24
             fieldName.equals("Age", ignoreCase = true) -> {
               ageSeconds = value.toNonNegativeInt(-1)
             }
@@ -139,12 +145,13 @@ class CacheStrategy internal constructor(
 
     /** Returns a strategy to use assuming the request can use the network. */
     private fun computeCandidate(): CacheStrategy {
-      // No cached response.
+      // No cached response. 没有缓存响应
       if (cacheResponse == null) {
+        // 不使用缓存
         return CacheStrategy(request, null)
       }
 
-      // Drop the cached response if it's missing a required handshake.
+      // Drop the cached response if it's missing a required handshake. Https的缓存需要有握手连接
       if (request.isHttps && cacheResponse.handshake == null) {
         return CacheStrategy(request, null)
       }
@@ -152,11 +159,13 @@ class CacheStrategy internal constructor(
       // If this response shouldn't have been stored, it should never be used as a response source.
       // This check should be redundant as long as the persistence store is well-behaved and the
       // rules are constant.
+      // 判断是否应该被缓存 Returns true if [response] can be stored to later serve another request.
       if (!isCacheable(cacheResponse, request)) {
         return CacheStrategy(request, null)
       }
 
       val requestCaching = request.cacheControl
+      // 请求头中的header关于Cache的信息 eg. Cache-Control: no-cache
       if (requestCaching.noCache || hasConditions(request)) {
         return CacheStrategy(request, null)
       }
@@ -166,6 +175,13 @@ class CacheStrategy internal constructor(
       val ageMillis = cacheResponseAge()
       var freshMillis = computeFreshnessLifetime()
 
+      // 判断缓存是否失效
+
+      /**
+       *  maxAgeSeconds ：缓存的内容将在 xxx 秒后失效，缓存有效期
+       *  minFreshSeconds ：min-fresh 要求缓存服务器返回 min-fresh 时间内的缓存数据。比如，有个资源在缓存里面已经存了7s了，其中 “max-age=10”，那么“7+1<10”，在 1s 之后还是新鲜的，因此是有效的
+       *  maxStaleSeconds ：表示客户端愿意接受超过其新鲜度生命周期的响应，只超过了maxAgeSeconds之后额外的时间，一般缓存生效时间（maxAgeSeconds + maxStaleSeconds）
+       */
       if (requestCaching.maxAgeSeconds != -1) {
         freshMillis = minOf(freshMillis, SECONDS.toMillis(requestCaching.maxAgeSeconds.toLong()))
       }
@@ -180,6 +196,7 @@ class CacheStrategy internal constructor(
         maxStaleMillis = SECONDS.toMillis(requestCaching.maxStaleSeconds.toLong())
       }
 
+      // 缓存是否在有效期内
       if (!responseCaching.noCache && ageMillis + minFreshMillis < freshMillis + maxStaleMillis) {
         val builder = cacheResponse.newBuilder()
         if (ageMillis + minFreshMillis >= freshMillis) {
@@ -189,6 +206,7 @@ class CacheStrategy internal constructor(
         if (ageMillis > oneDayMillis && isFreshnessLifetimeHeuristic()) {
           builder.addHeader("Warning", "113 HttpURLConnection \"Heuristic expiration\"")
         }
+        // 不使用网络 使用缓存
         return CacheStrategy(null, builder.build())
       }
 
@@ -198,11 +216,15 @@ class CacheStrategy internal constructor(
       val conditionValue: String?
       when {
         etag != null -> {
+          // 客户端发送etag给后端  服务器会比对这个客服端发送过来的Etag是否与服务器的相同，
           conditionName = "If-None-Match"
           conditionValue = etag
         }
 
         lastModified != null -> {
+          // 把浏览器端缓存页面的最后修改时间发到服务器去，服务器把这个时间与服务器上实际文件的最后修改时间进行比较。
+          // 如果时间一致，那么返回HTTP状态码304（不返回文件内容），客户端接到之后，就直接把本地缓存文件显示到浏览器中。
+          // 如果时间不一致，就返回HTTP状态码200和新的文件内容，客户端接到之后，会丢弃旧文件，把新文件缓存起来，并显示到浏览器中。
           conditionName = "If-Modified-Since"
           conditionValue = lastModifiedString
         }
@@ -211,7 +233,7 @@ class CacheStrategy internal constructor(
           conditionName = "If-Modified-Since"
           conditionValue = servedDateString
         }
-
+        // 其他情况下 使用网络 不使用缓存
         else -> return CacheStrategy(request, null) // No condition! Make a regular request.
       }
 
@@ -221,6 +243,7 @@ class CacheStrategy internal constructor(
       val conditionalRequest = request.newBuilder()
           .headers(conditionalRequestHeaders.build())
           .build()
+      // 可以使用缓存          
       return CacheStrategy(conditionalRequest, cacheResponse)
     }
 
@@ -303,6 +326,7 @@ class CacheStrategy internal constructor(
         HTTP_NOT_IMPLEMENTED,
         StatusLine.HTTP_PERM_REDIRECT -> {
           // These codes can be cached unless headers forbid it.
+          // 这些状态码可以缓存除非在header中禁止缓存
         }
 
         HTTP_MOVED_TEMP,
@@ -320,6 +344,7 @@ class CacheStrategy internal constructor(
 
         else -> {
           // All other codes cannot be cached.
+          // 其他状态码的响应不可以缓存
           return false
         }
       }

@@ -70,76 +70,7 @@ class CacheControl private constructor(
 
   private var headerValue: String?
 ) {
-  @JvmName("-deprecated_noCache")
-  @Deprecated(
-      message = "moved to val",
-      replaceWith = ReplaceWith(expression = "noCache"),
-      level = DeprecationLevel.ERROR)
-  fun noCache() = noCache
-
-  @JvmName("-deprecated_noStore")
-  @Deprecated(
-      message = "moved to val",
-      replaceWith = ReplaceWith(expression = "noStore"),
-      level = DeprecationLevel.ERROR)
-  fun noStore() = noStore
-
-  @JvmName("-deprecated_maxAgeSeconds")
-  @Deprecated(
-      message = "moved to val",
-      replaceWith = ReplaceWith(expression = "maxAgeSeconds"),
-      level = DeprecationLevel.ERROR)
-  fun maxAgeSeconds() = maxAgeSeconds
-
-  @JvmName("-deprecated_sMaxAgeSeconds")
-  @Deprecated(
-      message = "moved to val",
-      replaceWith = ReplaceWith(expression = "sMaxAgeSeconds"),
-      level = DeprecationLevel.ERROR)
-  fun sMaxAgeSeconds() = sMaxAgeSeconds
-
-  @JvmName("-deprecated_mustRevalidate")
-  @Deprecated(
-      message = "moved to val",
-      replaceWith = ReplaceWith(expression = "mustRevalidate"),
-      level = DeprecationLevel.ERROR)
-  fun mustRevalidate() = mustRevalidate
-
-  @JvmName("-deprecated_maxStaleSeconds")
-  @Deprecated(
-      message = "moved to val",
-      replaceWith = ReplaceWith(expression = "maxStaleSeconds"),
-      level = DeprecationLevel.ERROR)
-  fun maxStaleSeconds() = maxStaleSeconds
-
-  @JvmName("-deprecated_minFreshSeconds")
-  @Deprecated(
-      message = "moved to val",
-      replaceWith = ReplaceWith(expression = "minFreshSeconds"),
-      level = DeprecationLevel.ERROR)
-  fun minFreshSeconds() = minFreshSeconds
-
-  @JvmName("-deprecated_onlyIfCached")
-  @Deprecated(
-      message = "moved to val",
-      replaceWith = ReplaceWith(expression = "onlyIfCached"),
-      level = DeprecationLevel.ERROR)
-  fun onlyIfCached() = onlyIfCached
-
-  @JvmName("-deprecated_noTransform")
-  @Deprecated(
-      message = "moved to val",
-      replaceWith = ReplaceWith(expression = "noTransform"),
-      level = DeprecationLevel.ERROR)
-  fun noTransform() = noTransform
-
-  @JvmName("-deprecated_immutable")
-  @Deprecated(
-      message = "moved to val",
-      replaceWith = ReplaceWith(expression = "immutable"),
-      level = DeprecationLevel.ERROR)
-  fun immutable() = immutable
-
+  
   override fun toString(): String {
     var result = headerValue
     if (result == null) {
@@ -175,12 +106,12 @@ class CacheControl private constructor(
     private var noTransform: Boolean = false
     private var immutable: Boolean = false
 
-    /** Don't accept an unvalidated cached response. */
+    /** Don't accept an unvalidated cached response. 不接受未验证过的缓存*/
     fun noCache() = apply {
       this.noCache = true
     }
 
-    /** Don't store the server's response in any cache. */
+    /** Don't store the server's response in any cache. 不缓存*/
     fun noStore() = apply {
       this.noStore = true
     }
@@ -279,6 +210,7 @@ class CacheControl private constructor(
     /**
      * Returns the cache directives of [headers]. This honors both Cache-Control and Pragma headers
      * if they are present.
+     * 解析header中的关于缓存的信息
      */
     @JvmStatic
     fun parse(headers: Headers): CacheControl {

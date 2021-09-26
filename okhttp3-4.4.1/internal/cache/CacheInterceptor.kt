@@ -46,6 +46,11 @@ class CacheInterceptor(internal val cache: Cache?) : Interceptor {
 
     val now = System.currentTimeMillis()
 
+    /**
+     *  构建缓存策略
+     *  networkRequest : The request to send on the network, or null if this call doesn't use the network. 
+     *  cacheResponse : The cached response to return or validate; or null if this call doesn't use a cache. 
+     */
     val strategy = CacheStrategy.Factory(now, chain.request(), cacheCandidate).compute()
     val networkRequest = strategy.networkRequest
     val cacheResponse = strategy.cacheResponse
@@ -54,10 +59,12 @@ class CacheInterceptor(internal val cache: Cache?) : Interceptor {
 
     if (cacheCandidate != null && cacheResponse == null) {
       // The cache candidate wasn't applicable. Close it.
+      // 当前的缓存不可用 关闭
       cacheCandidate.body?.closeQuietly()
     }
 
     // If we're forbidden from using the network and the cache is insufficient, fail.
+    // 不使用网络并且不使用缓存 返回504状态码
     if (networkRequest == null && cacheResponse == null) {
       return Response.Builder()
           .request(chain.request())
@@ -72,6 +79,7 @@ class CacheInterceptor(internal val cache: Cache?) : Interceptor {
 
     // If we don't need the network, we're done.
     if (networkRequest == null) {
+      // 返回缓存的响应
       return cacheResponse!!.newBuilder()
           .cacheResponse(stripBody(cacheResponse))
           .build()
@@ -90,6 +98,7 @@ class CacheInterceptor(internal val cache: Cache?) : Interceptor {
     // If we have a cache response too, then we're doing a conditional get.
     if (cacheResponse != null) {
       if (networkResponse?.code == HTTP_NOT_MODIFIED) {
+        // 状态码是304 表示 自从上次请求后，请求的网页未修改过。服务器返回此响应时，不会返回网页内容。
         val response = cacheResponse.newBuilder()
             .headers(combine(cacheResponse.headers, networkResponse.headers))
             .sentRequestAtMillis(networkResponse.sentRequestAtMillis)
@@ -103,6 +112,7 @@ class CacheInterceptor(internal val cache: Cache?) : Interceptor {
         // Update the cache after combining headers but before stripping the
         // Content-Encoding header (as performed by initContentStream()).
         cache!!.trackConditionalCacheHit()
+        // 更新缓存响应
         cache.update(cacheResponse, response)
         return response
       } else {
@@ -116,10 +126,12 @@ class CacheInterceptor(internal val cache: Cache?) : Interceptor {
         .build()
 
     if (cache != null) {
+      // response是否有响应body      缓存策略判断是否可以缓存
       if (response.promisesBody() && CacheStrategy.isCacheable(response, networkRequest)) {
         // Offer this request to the cache.
         // 放入缓存
         val cacheRequest = cache.put(response)
+        // 构建缓存的响应并返回
         return cacheWritingResponse(cacheRequest, response)
       }
 
