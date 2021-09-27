@@ -137,6 +137,7 @@ class CacheStrategy internal constructor(
 
       // We're forbidden from using the network and the cache is insufficient.
       if (candidate.networkRequest != null && request.cacheControl.onlyIfCached) {
+        // 不使用网络 不使用缓存 返回504状态码
         return CacheStrategy(null, null)
       }
 
@@ -153,20 +154,22 @@ class CacheStrategy internal constructor(
 
       // Drop the cached response if it's missing a required handshake. Https的缓存需要有握手连接
       if (request.isHttps && cacheResponse.handshake == null) {
+        // 不使用缓存
         return CacheStrategy(request, null)
       }
 
       // If this response shouldn't have been stored, it should never be used as a response source.
       // This check should be redundant as long as the persistence store is well-behaved and the
       // rules are constant.
-      // 判断是否应该被缓存 Returns true if [response] can be stored to later serve another request.
+      // 判断是否可以被缓存  isCacheable() -> Returns true if [response] can be stored to later serve another request.
       if (!isCacheable(cacheResponse, request)) {
         return CacheStrategy(request, null)
       }
 
       val requestCaching = request.cacheControl
-      // 请求头中的header关于Cache的信息 eg. Cache-Control: no-cache
+      // 请求头中的header关于Cache的信息 eg. Cache-Control: no-cache 或者请求header中的If-Modified-Since不为空
       if (requestCaching.noCache || hasConditions(request)) {
+        // 不使用缓存
         return CacheStrategy(request, null)
       }
 
@@ -206,7 +209,7 @@ class CacheStrategy internal constructor(
         if (ageMillis > oneDayMillis && isFreshnessLifetimeHeuristic()) {
           builder.addHeader("Warning", "113 HttpURLConnection \"Heuristic expiration\"")
         }
-        // 不使用网络 使用缓存
+        // 使用缓存
         return CacheStrategy(null, builder.build())
       }
 
@@ -243,7 +246,7 @@ class CacheStrategy internal constructor(
       val conditionalRequest = request.newBuilder()
           .headers(conditionalRequestHeaders.build())
           .build()
-      // 可以使用缓存          
+      // 使用网络 
       return CacheStrategy(conditionalRequest, cacheResponse)
     }
 

@@ -32,12 +32,16 @@ class CallServerInterceptor(private val forWebSocket: Boolean) : Interceptor {
     val request = realChain.request
     val requestBody = request.body
     val sentRequestMillis = System.currentTimeMillis()
-    // 发送请求头
+    /** 发送请求头
+     *  GET /user HTTP/1.1
+     *  Host: api.github.com
+     *  Content-Type: application/json
+     */
     exchange.writeRequestHeaders(request)
 
     var invokeStartEvent = true
     var responseBuilder: Response.Builder? = null
-    // 需要有请求body Method不是GET或者HEAD
+    // Method不是GET或者HEAD并且请求body不是空的 
     if (HttpMethod.permitsRequestBody(request.method) && requestBody != null) {
       // If there's a "Expect: 100-continue" header on the request, wait for a "HTTP/1.1 100
       // Continue" response before transmitting the request body. If we don't get that, return
@@ -77,6 +81,7 @@ class CallServerInterceptor(private val forWebSocket: Boolean) : Interceptor {
     }
 
     if (requestBody == null || !requestBody.isDuplex()) {
+      // 结束请求
       exchange.finishRequest()
     }
     if (responseBuilder == null) {
@@ -95,7 +100,7 @@ class CallServerInterceptor(private val forWebSocket: Boolean) : Interceptor {
         .build()
     var code = response.code
     if (code == 100) {
-      // 服务器返回的是 100
+      // 服务器返回的是 100: Continue
       // Server sent a 100-continue even though we did not request one. Try again to read the actual
       // response status.
       responseBuilder = exchange.readResponseHeaders(expectContinue = false)!!
@@ -114,14 +119,14 @@ class CallServerInterceptor(private val forWebSocket: Boolean) : Interceptor {
     exchange.responseHeadersEnd(response)
 
     response = if (forWebSocket && code == 101) {
-      // 需要切换协议
+      // 101: Switching Protocols 需要切换协议
       // Connection is upgrading, but we need to ensure interceptors see a non-null response body.
       response.newBuilder()
           .body(EMPTY_RESPONSE)
           .build()
     } else {
       response.newBuilder()
-          .body(exchange.openResponseBody(response)) // 添加body 
+          .body(exchange.openResponseBody(response)) // 读响应body 并且添加到response
           .build()
     }
     if ("close".equals(response.request.header("Connection"), ignoreCase = true) ||

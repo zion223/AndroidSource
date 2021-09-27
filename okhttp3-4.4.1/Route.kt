@@ -43,27 +43,6 @@ class Route(
   @get:JvmName("socketAddress") val socketAddress: InetSocketAddress
 ) {
 
-  @JvmName("-deprecated_address")
-  @Deprecated(
-      message = "moved to val",
-      replaceWith = ReplaceWith(expression = "address"),
-      level = DeprecationLevel.ERROR)
-  fun address(): Address = address
-
-  @JvmName("-deprecated_proxy")
-  @Deprecated(
-      message = "moved to val",
-      replaceWith = ReplaceWith(expression = "proxy"),
-      level = DeprecationLevel.ERROR)
-  fun proxy(): Proxy = proxy
-
-  @JvmName("-deprecated_socketAddress")
-  @Deprecated(
-      message = "moved to val",
-      replaceWith = ReplaceWith(expression = "socketAddress"),
-      level = DeprecationLevel.ERROR)
-  fun socketAddress(): InetSocketAddress = socketAddress
-
   /**
    * Returns true if this route tunnels HTTPS through an HTTP proxy.
    * See [RFC 2817, Section 5.2][rfc_2817].

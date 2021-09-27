@@ -59,13 +59,6 @@ class ConnectionSpec internal constructor(
       return cipherSuitesAsString?.map { CipherSuite.forJavaName(it) }?.toList()
     }
 
-  @JvmName("-deprecated_cipherSuites")
-  @Deprecated(
-      message = "moved to val",
-      replaceWith = ReplaceWith(expression = "cipherSuites"),
-      level = DeprecationLevel.ERROR)
-  fun cipherSuites(): List<CipherSuite>? = cipherSuites
-
   /**
    * Returns the TLS versions to use when negotiating a connection. Returns null if all of the SSL
    * socket's enabled TLS versions should be used.
@@ -74,20 +67,6 @@ class ConnectionSpec internal constructor(
     get() {
       return tlsVersionsAsString?.map { TlsVersion.forJavaName(it) }?.toList()
     }
-
-  @JvmName("-deprecated_tlsVersions")
-  @Deprecated(
-      message = "moved to val",
-      replaceWith = ReplaceWith(expression = "tlsVersions"),
-      level = DeprecationLevel.ERROR)
-  fun tlsVersions(): List<TlsVersion>? = tlsVersions
-
-  @JvmName("-deprecated_supportsTlsExtensions")
-  @Deprecated(
-      message = "moved to val",
-      replaceWith = ReplaceWith(expression = "supportsTlsExtensions"),
-      level = DeprecationLevel.ERROR)
-  fun supportsTlsExtensions(): Boolean = supportsTlsExtensions
 
   /** Applies this spec to [sslSocket]. */
   internal fun apply(sslSocket: SSLSocket, isFallback: Boolean) {

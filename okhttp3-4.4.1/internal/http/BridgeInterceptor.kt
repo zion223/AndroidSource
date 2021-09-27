@@ -38,6 +38,7 @@ class BridgeInterceptor(private val cookieJar: CookieJar) : Interceptor {
     val userRequest = chain.request()
     val requestBuilder = userRequest.newBuilder()
 
+    // =============== 前置工作开始 ===============================
     val body = userRequest.body
     if (body != null) {
       val contentType = body.contentType()
@@ -62,6 +63,7 @@ class BridgeInterceptor(private val cookieJar: CookieJar) : Interceptor {
     }
 
     if (userRequest.header("Connection") == null) {
+      // 默认 Connection: Keep-Alive
       requestBuilder.header("Connection", "Keep-Alive")
     }
 
@@ -75,15 +77,20 @@ class BridgeInterceptor(private val cookieJar: CookieJar) : Interceptor {
 
     val cookies = cookieJar.loadForRequest(userRequest.url)
     if (cookies.isNotEmpty()) {
+      // header中添加cookie
       requestBuilder.header("Cookie", cookieHeader(cookies))
     }
 
     if (userRequest.header("User-Agent") == null) {
       requestBuilder.header("User-Agent", userAgent)
     }
+    // =============== 前置工作结束 ===============================
 
-    val networkResponse = chain.proceed(requestBuilder.build())
+    val networkResponse = chain.proceed(requestBuilder.build()) // =========== 中置工作 =================
 
+    // =============== 后置工作开始 ===============================
+
+    // 解析cookie并且存储
     cookieJar.receiveHeaders(userRequest.url, networkResponse.headers)
 
     val responseBuilder = networkResponse.newBuilder()
@@ -92,6 +99,7 @@ class BridgeInterceptor(private val cookieJar: CookieJar) : Interceptor {
     if (transparentGzip &&
         "gzip".equals(networkResponse.header("Content-Encoding"), ignoreCase = true) &&
         networkResponse.promisesBody()) {
+      // gzip解压缩
       val responseBody = networkResponse.body
       if (responseBody != null) {
         val gzipSource = GzipSource(responseBody.source())

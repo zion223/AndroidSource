@@ -115,7 +115,7 @@ class Http1ExchangeCodec(
    * the proper value.
    */
   override fun writeRequestHeaders(request: Request) {
-    // requestLine eg. GET /user HTTP/1.1
+    // requestLine  eg. GET /user HTTP/1.1
     val requestLine = RequestLine.get(request, connection.route().proxy.type())
     writeRequest(request.headers, requestLine)
   }
@@ -170,6 +170,7 @@ class Http1ExchangeCodec(
     state = STATE_OPEN_REQUEST_BODY
   }
 
+  // 解析响应头
   override fun readResponseHeaders(expectContinue: Boolean): Response.Builder? {
     check(state == STATE_OPEN_REQUEST_BODY || state == STATE_READ_RESPONSE_HEADERS) {
       "state: $state"
@@ -186,6 +187,7 @@ class Http1ExchangeCodec(
           .headers(readHeaders()) // 读header
 
       return when {
+        // 期望继续 并且状态码是100
         expectContinue && statusLine.code == HTTP_CONTINUE -> {
           null
         }

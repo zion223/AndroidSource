@@ -185,6 +185,7 @@ class RealConnection(
 
     while (true) {
       try {
+        // Returns true if this route tunnels HTTPS through an HTTP proxy.
         if (route.requiresTunnel()) { // HTTP转HTTPS
           // 创建Http Tunnel
           connectTunnel(connectTimeout, readTimeout, writeTimeout, call, eventListener)
@@ -375,7 +376,7 @@ class RealConnection(
       // block for session establishment
       val sslSocketSession = sslSocket.session
       val unverifiedHandshake = sslSocketSession.handshake()
-      // 验证连接
+      // 验证socket的证书
       // Verify that the socket's certificates are acceptable for the target host.
       if (!address.hostnameVerifier!!.verify(address.url.host, sslSocketSession)) {
         val peerCertificates = unverifiedHandshake.peerCertificates

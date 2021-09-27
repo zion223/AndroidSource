@@ -79,6 +79,7 @@ class RetryAndFollowUpInterceptor(private val client: OkHttpClient) : Intercepto
           newExchangeFinder = true
         } catch (e: RouteException) {
           // The attempt to connect via a route failed. The request will not have been sent.
+          // 试图恢复
           if (!recover(e.lastConnectException, call, request, requestSendStarted = false)) {
             throw e.firstConnectException
           }
@@ -109,6 +110,7 @@ class RetryAndFollowUpInterceptor(private val client: OkHttpClient) : Intercepto
         val followUp = followUpRequest(response, exchange)
 
         if (followUp == null) {
+          // 不需要重定向
           if (exchange != null && exchange.isDuplex) {
             call.timeoutEarlyExit()
           }
@@ -118,6 +120,7 @@ class RetryAndFollowUpInterceptor(private val client: OkHttpClient) : Intercepto
         }
 
         val followUpBody = followUp.body
+        // isOneShot() => Returns true if this body expects at most one call to [writeTo] and can be transmitted at most once.
         if (followUpBody != null && followUpBody.isOneShot()) {
           closeActiveExchange = false
           // 返回结果
@@ -127,10 +130,12 @@ class RetryAndFollowUpInterceptor(private val client: OkHttpClient) : Intercepto
         response.body?.closeQuietly()
 
         if (++followUpCount > MAX_FOLLOW_UPS) {
+          // 超过最大的重定向次数
           throw ProtocolException("Too many follow-up requests: $followUpCount")
         }
         // 需要重定向 把request重新赋值
         request = followUp
+        // priorResponse也要赋值
         priorResponse = response
       } finally {
         // ========= 后置工作 结束 ==========
@@ -151,16 +156,16 @@ class RetryAndFollowUpInterceptor(private val client: OkHttpClient) : Intercepto
     userRequest: Request,
     requestSendStarted: Boolean
   ): Boolean {
-    // The application layer has forbidden retries.
+    // The application layer has forbidden retries. 客户端配置重试
     if (!client.retryOnConnectionFailure) return false
 
-    // We can't send the request body again.
+    // We can't send the request body again. 不能重复发送的请求
     if (requestSendStarted && requestIsOneShot(e, userRequest)) return false
 
-    // This exception is fatal.
+    // This exception is fatal. 致命的异常不可恢复 eg. ProtocolException、CertificateException
     if (!isRecoverable(e, requestSendStarted)) return false
 
-    // No more routes to attempt.
+    // No more routes to attempt. 没有可用的route
     if (!call.retryAfterFailure()) return false
 
     // For failure recovery, use the same route selector with a new connection.
@@ -216,6 +221,8 @@ class RetryAndFollowUpInterceptor(private val client: OkHttpClient) : Intercepto
 
     val method = userResponse.request.method
     when (responseCode) {
+
+      // 407 Proxy Authentication Required
       HTTP_PROXY_AUTH -> {
         val selectedProxy = route!!.proxy
         if (selectedProxy.type() != Proxy.Type.HTTP) {
@@ -224,8 +231,10 @@ class RetryAndFollowUpInterceptor(private val client: OkHttpClient) : Intercepto
         return client.proxyAuthenticator.authenticate(route, userResponse)
       }
 
+      // 401 Unauthorized 客户端配置的authenticator进行认证
       HTTP_UNAUTHORIZED -> return client.authenticator.authenticate(route, userResponse)
 
+      // 308、307
       HTTP_PERM_REDIRECT, HTTP_TEMP_REDIRECT -> {
         // "If the 307 or 308 status code is received in response to a request other than GET
         // or HEAD, the user agent MUST NOT automatically redirect the request"
@@ -235,10 +244,15 @@ class RetryAndFollowUpInterceptor(private val client: OkHttpClient) : Intercepto
         return buildRedirectRequest(userResponse, method)
       }
 
+      // 300: Multiple Choices 
+      // 301: Moved Permanently 
+      // 302: Temporary Redirect 
+      // 303: See Other
       HTTP_MULT_CHOICE, HTTP_MOVED_PERM, HTTP_MOVED_TEMP, HTTP_SEE_OTHER -> {
         return buildRedirectRequest(userResponse, method)
       }
 
+      // 408: Request Time-Out.
       HTTP_CLIENT_TIMEOUT -> {
         // 408's are rare in practice, but some servers like HAProxy use this response code. The
         // spec says that we may repeat the request without modifications. Modern browsers also
@@ -259,16 +273,19 @@ class RetryAndFollowUpInterceptor(private val client: OkHttpClient) : Intercepto
         }
 
         if (retryAfter(userResponse, 0) > 0) {
+          // 不能再发起重试了
           return null
         }
 
         return userResponse.request
       }
 
+      // 503: Service Unavailable
       HTTP_UNAVAILABLE -> {
         val priorResponse = userResponse.priorResponse
         if (priorResponse != null && priorResponse.code == HTTP_UNAVAILABLE) {
           // We attempted to retry and got another timeout. Give up.
+          // 重试后还是503状态码 那么放弃重试
           return null
         }
 
@@ -280,6 +297,7 @@ class RetryAndFollowUpInterceptor(private val client: OkHttpClient) : Intercepto
         return null
       }
 
+      // 421:  Retry these if the exchange used connection coalescing. HTTP2的连接合并
       HTTP_MISDIRECTED_REQUEST -> {
         // OkHttp can coalesce HTTP/2 connections even if the domain names are different. See
         // RealConnection.isEligible(). If we attempted this and the server returned HTTP 421, then
@@ -301,15 +319,18 @@ class RetryAndFollowUpInterceptor(private val client: OkHttpClient) : Intercepto
     }
   }
 
-  private fun buildRedirectRequest(userResponse: Response, method: String): Request? {
-    // Does the client allow redirects?
-    if (!client.followRedirects) return null
 
+  // 构建重定向的请求
+  private fun buildRedirectRequest(userResponse: Response, method: String): Request? {
+    // Does the client allow redirects? 客户端配置是否可以重定向
+    if (!client.followRedirects) return null
+    // 响应头的Location
     val location = userResponse.header("Location") ?: return null
     // Don't follow redirects to unsupported protocols.
     val url = userResponse.request.url.resolve(location) ?: return null
 
     // If configured, don't follow redirects between SSL and non-SSL.
+    // 如果配置followSslRedirects为false 那么不能在HTTP和HTTPS之间重定向
     val sameScheme = url.scheme == userResponse.request.url.scheme
     if (!sameScheme && !client.followSslRedirects) return null
 
@@ -333,6 +354,7 @@ class RetryAndFollowUpInterceptor(private val client: OkHttpClient) : Intercepto
     // When redirecting across hosts, drop all authentication headers. This
     // is potentially annoying to the application layer since they have no
     // way to retain them.
+    // Returns true if an HTTP request for this URL and [other] can reuse a connection
     if (!userResponse.request.url.canReuseConnectionFor(url)) {
       requestBuilder.removeHeader("Authorization")
     }
@@ -341,6 +363,7 @@ class RetryAndFollowUpInterceptor(private val client: OkHttpClient) : Intercepto
   }
 
   private fun retryAfter(userResponse: Response, defaultDelay: Int): Int {
+    // 响应头的Retry-After字段是否为空 如果为空则返回defaultDelay
     val header = userResponse.header("Retry-After") ?: return defaultDelay
 
     // https://tools.ietf.org/html/rfc7231#section-7.1.3
