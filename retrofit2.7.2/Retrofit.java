@@ -156,6 +156,7 @@ public final class Retrofit {
     synchronized (serviceMethodCache) {
       result = serviceMethodCache.get(method);
       if (result == null) {
+        // 返回的是ServiceMethod的子类
         result = ServiceMethod.parseAnnotations(this, method);
         serviceMethodCache.put(method, result);
       }
@@ -182,6 +183,7 @@ public final class Retrofit {
     return nextCallAdapter(null, returnType, annotations);
   }
 
+  // 查找CallAdapter
   public CallAdapter<?, ?> nextCallAdapter(@Nullable CallAdapter.Factory skipPast, Type returnType,
       Annotation[] annotations) {
     Objects.requireNonNull(returnType, "returnType == null");
@@ -195,7 +197,7 @@ public final class Retrofit {
         return adapter;
       }
     }
-
+    // 没找到CallAdapter抛出IllegalArgumentException异常
     StringBuilder builder = new StringBuilder("Could not locate call adapter for ")
         .append(returnType)
         .append(".\n");

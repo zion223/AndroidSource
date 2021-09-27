@@ -31,7 +31,8 @@ final class DefaultCallAdapterFactory extends CallAdapter.Factory {
     this.callbackExecutor = callbackExecutor;
   }
 
-  @Override public @Nullable CallAdapter<?, ?> get(
+  @Override 
+  public @Nullable CallAdapter<?, ?> get(
       Type returnType, Annotation[] annotations, Retrofit retrofit) {
     // 判断返回类型是否为Call类型 eg. Call<User>          
     if (getRawType(returnType) != Call.class) {
@@ -66,11 +67,13 @@ final class DefaultCallAdapterFactory extends CallAdapter.Factory {
     final Executor callbackExecutor;
     final Call<T> delegate;
 
+    // 把Call包装起来
     ExecutorCallbackCall(Executor callbackExecutor, Call<T> delegate) {
       this.callbackExecutor = callbackExecutor;
       this.delegate = delegate;
     }
 
+    // 调用的enqueue()方法最终调用到这里
     @Override 
     public void enqueue(final Callback<T> callback) {
       // 这里的delegate默认是OkHttpCall

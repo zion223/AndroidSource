@@ -158,7 +158,8 @@ abstract class HttpServiceMethod<ResponseT, ReturnT> extends ServiceMethod<Retur
       this.callAdapter = callAdapter;
     }
 
-    @Override protected ReturnT adapt(Call<ResponseT> call, Object[] args) {
+    @Override 
+    protected ReturnT adapt(Call<ResponseT> call, Object[] args) {
       // 这里是DefaultCallAdapterFactory中的get()方法返回的匿名内部类的adapt()方法
       // 返回的是 ExecutorCallbackCall
       return callAdapter.adapt(call);
@@ -177,7 +178,8 @@ abstract class HttpServiceMethod<ResponseT, ReturnT> extends ServiceMethod<Retur
       this.callAdapter = callAdapter;
     }
 
-    @Override protected Object adapt(Call<ResponseT> call, Object[] args) {
+    @Override 
+    protected Object adapt(Call<ResponseT> call, Object[] args) {
       call = callAdapter.adapt(call);
 
       //noinspection unchecked Checked by reflection inside RequestFactory.
@@ -206,7 +208,8 @@ abstract class HttpServiceMethod<ResponseT, ReturnT> extends ServiceMethod<Retur
       this.isNullable = isNullable;
     }
 
-    @Override protected Object adapt(Call<ResponseT> call, Object[] args) {
+    @Override 
+    protected Object adapt(Call<ResponseT> call, Object[] args) {
       call = callAdapter.adapt(call);
 
       //noinspection unchecked Checked by reflection inside RequestFactory.
