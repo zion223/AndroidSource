@@ -167,8 +167,7 @@ class RealCall(
     eventListener.callStart(this)
   }
 
-  @Throws(IOException::class)
-  // 核心方法
+  @Throws(IOException::class) // 核心方法
   internal fun getResponseWithInterceptorChain(): Response {
     // 拦截器集合
     val interceptors = mutableListOf<Interceptor>()
@@ -505,6 +504,7 @@ class RealCall(
         var signalledCallback = false
         timeout.enter()
         try {
+          // 获取Response 核心方法
           val response = getResponseWithInterceptorChain()
           signalledCallback = true
           // 回调接口的onResponse()方法

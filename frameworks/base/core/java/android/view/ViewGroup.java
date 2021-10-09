@@ -2476,11 +2476,6 @@ public abstract class ViewGroup extends View implements ViewParent, ViewManager 
             mInputEventConsistencyVerifier.onTouchEvent(ev, 1);
         }
 
-        // If the event targets the accessibility focused view and this is it, start
-        // normal event dispatch. Maybe a descendant is what will handle the click.
-        if (ev.isTargetAccessibilityFocus() && isAccessibilityFocusedViewOrHost()) {
-            ev.setTargetAccessibilityFocus(false);
-        }
         // 事件是否被处理 最后的返回值
         boolean handled = false;
         // 安全校验 判断当前窗口是否是模糊窗口(Filter the touch event to apply security policies)
@@ -2495,9 +2490,9 @@ public abstract class ViewGroup extends View implements ViewParent, ViewManager 
                 // Throw away all previous state when starting a new touch gesture.
                 // The framework may have dropped the up or cancel event for the previous gesture
                 // due to an app switch, ANR, or some other state change.
-                // 重置标志位 mGroupFlags 因此子类调用requestDisallowInterceptTouchEvent()后 ViewGroup仍然可以拦截到ACTION_DOWN事件
-                cancelAndClearTouchTargets(ev);
                 // 置mFirstTouchTarget为null
+                cancelAndClearTouchTargets(ev);
+                // 重置标志位 mGroupFlags 因此子类调用requestDisallowInterceptTouchEvent()后 ViewGroup仍然可以拦截到ACTION_DOWN事件
                 resetTouchState();
             }
 

@@ -12924,6 +12924,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
         final float x = event.getX();
         final float y = event.getY();
         final int viewFlags = mViewFlags;
+        // 单点触摸，不支持多点触摸
         final int action = event.getAction();
         // 只要有一个设置为true 则clickable设置为true
         // 如果设置了OnClickListener则clickable为true
@@ -12942,7 +12943,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
             return clickable;
         }
         if (mTouchDelegate != null) {
-            // 交给代理类去处理
+            // 交给代理类去处理 触摸代理 几乎无用
             if (mTouchDelegate.onTouchEvent(event)) {
                 return true;
             }
@@ -12955,6 +12956,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
                 case MotionEvent.ACTION_UP:
                     mPrivateFlags3 &= ~PFLAG3_FINGER_DOWN;
                     if ((viewFlags & TOOLTIP) == TOOLTIP) {
+                        // ToolTip相关
                         handleTooltipUp();
                     }
                     if (!clickable) {
@@ -12974,11 +12976,12 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
                         // touch mode.
                         boolean focusTaken = false;
                         if (isFocusable() && isFocusableInTouchMode() && !isFocused()) {
-                            // 申请focus
+                            // 申请焦点
                             focusTaken = requestFocus();
                         }
 
                         if (prepressed) {
+                            // 预按下状态
                             // The button is being released before we actually
                             // showed it as pressed.  Make it show the pressed
                             // state now (before scheduling the click) to ensure
@@ -13013,7 +13016,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
                         }
 
                         if (prepressed) {
-                            // 重置press状态
+                            // 重置press状态 64ms后自动设置抬起
                             postDelayed(mUnsetPressedState,
                                     ViewConfiguration.getPressedStateDuration());
                         } else if (!post(mUnsetPressedState)) {
@@ -13034,11 +13037,11 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
                     mHasPerformedLongPress = false;
 
                     if (!clickable) {
-                        // 检查LongClick
+                        // 检查LongClick 为了显示ToolTip
                         checkForLongClick(0, x, y);
                         break;
                     }
-                    // 处理鼠标事件 默认返回false
+                    // 处理鼠标事件 右键点击 
                     if (performButtonActionOnTouchDown(event)) {
                         break;
                     }
@@ -13050,7 +13053,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
                     // a short period in case this is a scroll.
                     // 判断是否当前view在一个scrolling view内
                     if (isInScrollingContainer) {
-                        // 设置PFLAG_PREPRESSED标志位  预按状态
+                        // 设置PFLAG_PREPRESSED标志位  预按状态 延迟显示View的按下状态
                         mPrivateFlags |= PFLAG_PREPRESSED;
                         if (mPendingCheckForTap == null) {
                             mPendingCheckForTap = new CheckForTap();
@@ -13083,6 +13086,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
 
                 case MotionEvent.ACTION_MOVE:
                     if (clickable) {
+                        // 水波纹效果
                         drawableHotspotChanged(x, y);
                     }
 
