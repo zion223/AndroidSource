@@ -136,8 +136,9 @@ class CacheStrategy internal constructor(
       val candidate = computeCandidate()
 
       // We're forbidden from using the network and the cache is insufficient.
+      // 禁止使用网络
       if (candidate.networkRequest != null && request.cacheControl.onlyIfCached) {
-        // 不使用网络 不使用缓存 返回504状态码
+        // 不使用网络 不使用缓存 返回504状态码：网关超时
         return CacheStrategy(null, null)
       }
 
@@ -163,6 +164,7 @@ class CacheStrategy internal constructor(
       // rules are constant.
       // 判断是否可以被缓存  isCacheable() -> Returns true if [response] can be stored to later serve another request.
       if (!isCacheable(cacheResponse, request)) {
+        // 不适用缓存
         return CacheStrategy(request, null)
       }
 
@@ -178,9 +180,9 @@ class CacheStrategy internal constructor(
       val ageMillis = cacheResponseAge()
       var freshMillis = computeFreshnessLifetime()
 
-      // 判断缓存是否失效
 
       /**
+       *  判断缓存是否失效
        *  maxAgeSeconds ：缓存的内容将在 xxx 秒后失效，缓存有效期
        *  minFreshSeconds ：min-fresh 要求缓存服务器返回 min-fresh 时间内的缓存数据。比如，有个资源在缓存里面已经存了7s了，其中 “max-age=10”，那么“7+1<10”，在 1s 之后还是新鲜的，因此是有效的
        *  maxStaleSeconds ：表示客户端愿意接受超过其新鲜度生命周期的响应，只超过了maxAgeSeconds之后额外的时间，一般缓存生效时间（maxAgeSeconds + maxStaleSeconds）
@@ -219,7 +221,7 @@ class CacheStrategy internal constructor(
       val conditionValue: String?
       when {
         etag != null -> {
-          // 客户端发送etag给后端  服务器会比对这个客服端发送过来的Etag是否与服务器的相同，
+          // 客户端发送etag给后端  服务器会比对这个客户端发送过来的Etag是否与服务器的相同，
           conditionName = "If-None-Match"
           conditionValue = etag
         }

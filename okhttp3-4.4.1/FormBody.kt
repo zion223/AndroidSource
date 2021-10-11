@@ -36,13 +36,6 @@ class FormBody internal constructor(
   @get:JvmName("size") val size: Int
     get() = encodedNames.size
 
-  @JvmName("-deprecated_size")
-  @Deprecated(
-      message = "moved to val",
-      replaceWith = ReplaceWith(expression = "size"),
-      level = DeprecationLevel.ERROR)
-  fun size(): Int = size
-
   fun encodedName(index: Int) = encodedNames[index]
 
   fun name(index: Int) = encodedName(index).percentDecode(plusIsSpace = true)

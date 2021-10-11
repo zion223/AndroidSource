@@ -73,13 +73,6 @@ class Headers private constructor(
   @get:JvmName("size") val size: Int
     get() = namesAndValues.size / 2
 
-  @JvmName("-deprecated_size")
-  @Deprecated(
-      message = "moved to val",
-      replaceWith = ReplaceWith(expression = "size"),
-      level = DeprecationLevel.ERROR)
-  fun size(): Int = size
-
   /** Returns the field at `position`. */
   fun name(index: Int): String = namesAndValues[index * 2]
 

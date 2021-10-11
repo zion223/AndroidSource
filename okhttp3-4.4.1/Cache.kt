@@ -357,13 +357,6 @@ class Cache internal constructor(
   @get:JvmName("directory") val directory: File
     get() = cache.directory
 
-  @JvmName("-deprecated_directory")
-  @Deprecated(
-      message = "moved to val",
-      replaceWith = ReplaceWith(expression = "directory"),
-      level = DeprecationLevel.ERROR)
-  fun directory(): File = cache.directory
-
   @Synchronized internal fun trackResponse(cacheStrategy: CacheStrategy) {
     requestCount++
 

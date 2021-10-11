@@ -172,14 +172,14 @@ class RealCall(
     // 拦截器集合
     val interceptors = mutableListOf<Interceptor>()
     interceptors += client.interceptors
-    interceptors += RetryAndFollowUpInterceptor(client)
-    interceptors += BridgeInterceptor(client.cookieJar)
-    interceptors += CacheInterceptor(client.cache)
-    interceptors += ConnectInterceptor
+    interceptors += RetryAndFollowUpInterceptor(client) // 重试和重定向
+    interceptors += BridgeInterceptor(client.cookieJar) // 桥接 
+    interceptors += CacheInterceptor(client.cache) // 缓存
+    interceptors += ConnectInterceptor // 连接
     if (!forWebSocket) {
       interceptors += client.networkInterceptors
     }
-    interceptors += CallServerInterceptor(forWebSocket)
+    interceptors += CallServerInterceptor(forWebSocket) // 请求
 
     val chain = RealInterceptorChain(
         call = this,
@@ -246,6 +246,7 @@ class RealCall(
 
     // 编码解码器
     val codec = exchangeFinder!!.find(client, chain)
+    // 创建Exchange
     val result = Exchange(this, eventListener, exchangeFinder!!, codec)
     this.interceptorScopedExchange = result
 

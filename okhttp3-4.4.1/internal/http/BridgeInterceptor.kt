@@ -57,7 +57,7 @@ class BridgeInterceptor(private val cookieJar: CookieJar) : Interceptor {
     }
 
     if (userRequest.header("Host") == null) {
-      // 添加 header
+      // 在header中添加Host
       // Host: api.github.com
       requestBuilder.header("Host", userRequest.url.toHostHeader())
     }
@@ -72,9 +72,10 @@ class BridgeInterceptor(private val cookieJar: CookieJar) : Interceptor {
     var transparentGzip = false
     if (userRequest.header("Accept-Encoding") == null && userRequest.header("Range") == null) {
       transparentGzip = true
+      // 使用gzip传输
       requestBuilder.header("Accept-Encoding", "gzip")
     }
-
+    // 加载cookie
     val cookies = cookieJar.loadForRequest(userRequest.url)
     if (cookies.isNotEmpty()) {
       // header中添加cookie
@@ -82,6 +83,7 @@ class BridgeInterceptor(private val cookieJar: CookieJar) : Interceptor {
     }
 
     if (userRequest.header("User-Agent") == null) {
+      // header中添加User-Agent: "okhttp/4.4.1"
       requestBuilder.header("User-Agent", userAgent)
     }
     // =============== 前置工作结束 ===============================

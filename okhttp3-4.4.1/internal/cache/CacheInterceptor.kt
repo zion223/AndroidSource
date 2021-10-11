@@ -42,6 +42,7 @@ class CacheInterceptor(internal val cache: Cache?) : Interceptor {
 
   @Throws(IOException::class)
   override fun intercept(chain: Interceptor.Chain): Response {
+    // ======================== 前置工作 开始 =====================
     val cacheCandidate = cache?.get(chain.request())
 
     val now = System.currentTimeMillis()
@@ -64,7 +65,7 @@ class CacheInterceptor(internal val cache: Cache?) : Interceptor {
     }
 
     // If we're forbidden from using the network and the cache is insufficient, fail.
-    // 不使用网络并且不使用缓存 返回504状态码
+    // 不使用网络并且不使用缓存 返回504状态码 网关超时
     if (networkRequest == null && cacheResponse == null) {
       return Response.Builder()
           .request(chain.request())
@@ -77,7 +78,7 @@ class CacheInterceptor(internal val cache: Cache?) : Interceptor {
           .build()
     }
 
-    // If we don't need the network, we're done.
+    // 如果不使用网络 那么直接返回缓存的响应
     if (networkRequest == null) {
       // 返回缓存的响应
       return cacheResponse!!.newBuilder()
@@ -87,8 +88,11 @@ class CacheInterceptor(internal val cache: Cache?) : Interceptor {
 
     var networkResponse: Response? = null
     try {
+       // ======================== 前置工作 结束 =====================
+
       networkResponse = chain.proceed(networkRequest) // ========== 中置工作 =============
     } finally {
+       // ======================== 后置工作 开始 =====================
       // If we're crashing on I/O or otherwise, don't leak the cache body.
       if (networkResponse == null && cacheCandidate != null) {
         cacheCandidate.body?.closeQuietly()
@@ -144,7 +148,7 @@ class CacheInterceptor(internal val cache: Cache?) : Interceptor {
         }
       }
     }
-
+    // ======================== 后置工作 结束 =====================
     return response
   }
 

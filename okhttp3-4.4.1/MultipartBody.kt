@@ -50,33 +50,6 @@ class MultipartBody internal constructor(
   /** A combination of [type] and [boundaryByteString]. */
   override fun contentType(): MediaType = contentType
 
-  @JvmName("-deprecated_type")
-  @Deprecated(
-      message = "moved to val",
-      replaceWith = ReplaceWith(expression = "type"),
-      level = DeprecationLevel.ERROR)
-  fun type(): MediaType = type
-
-  @JvmName("-deprecated_boundary")
-  @Deprecated(
-      message = "moved to val",
-      replaceWith = ReplaceWith(expression = "boundary"),
-      level = DeprecationLevel.ERROR)
-  fun boundary(): String = boundary
-
-  @JvmName("-deprecated_size")
-  @Deprecated(
-      message = "moved to val",
-      replaceWith = ReplaceWith(expression = "size"),
-      level = DeprecationLevel.ERROR)
-  fun size(): Int = size
-
-  @JvmName("-deprecated_parts")
-  @Deprecated(
-      message = "moved to val",
-      replaceWith = ReplaceWith(expression = "parts"),
-      level = DeprecationLevel.ERROR)
-  fun parts(): List<Part> = parts
 
   @Throws(IOException::class)
   override fun contentLength(): Long {

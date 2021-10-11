@@ -28,13 +28,6 @@ enum class TlsVersion(
   TLS_1_0("TLSv1"), // 1999.
   SSL_3_0("SSLv3"); // 1996.
 
-  @JvmName("-deprecated_javaName")
-  @Deprecated(
-      message = "moved to val",
-      replaceWith = ReplaceWith(expression = "javaName"),
-      level = DeprecationLevel.ERROR)
-  fun javaName() = javaName
-
   companion object {
     @JvmStatic
     fun forJavaName(javaName: String): TlsVersion {

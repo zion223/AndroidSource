@@ -101,8 +101,7 @@ class CallServerInterceptor(private val forWebSocket: Boolean) : Interceptor {
     var code = response.code
     if (code == 100) {
       // 服务器返回的是 100: Continue
-      // Server sent a 100-continue even though we did not request one. Try again to read the actual
-      // response status.
+      // Server sent a 100-continue even though we did not request one. Try again to read the actual response status.
       responseBuilder = exchange.readResponseHeaders(expectContinue = false)!!
       if (invokeStartEvent) {
         exchange.responseHeadersStart()
@@ -126,13 +125,14 @@ class CallServerInterceptor(private val forWebSocket: Boolean) : Interceptor {
           .build()
     } else {
       response.newBuilder()
-          .body(exchange.openResponseBody(response)) // 读响应body 并且添加到response
+          .body(exchange.openResponseBody(response)) // 读取响应body 并且添加到response
           .build()
     }
     if ("close".equals(response.request.header("Connection"), ignoreCase = true) ||
         "close".equals(response.header("Connection"), ignoreCase = true)) {
       exchange.noNewExchangesOnConnection()
     }
+    // HTTP Code 204、205 都表示执行成功但是没有结果返回
     if ((code == 204 || code == 205) && response.body?.contentLength() ?: -1L > 0L) {
       throw ProtocolException(
           "HTTP $code had non-zero Content-Length: ${response.body?.contentLength()}")

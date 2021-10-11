@@ -31,6 +31,7 @@ object ConnectInterceptor : Interceptor {
     val realChain = chain as RealInterceptorChain
     val exchange = realChain.call.initExchange(chain)
     val connectedChain = realChain.copy(exchange = exchange)
+    // 无后置工作
     return connectedChain.proceed(realChain.request)
   }
 }

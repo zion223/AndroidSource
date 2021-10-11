@@ -56,57 +56,15 @@ class Handshake internal constructor(
     }
   }
 
-  @JvmName("-deprecated_tlsVersion")
-  @Deprecated(
-      message = "moved to val",
-      replaceWith = ReplaceWith(expression = "tlsVersion"),
-      level = DeprecationLevel.ERROR)
-  fun tlsVersion() = tlsVersion
-
-  @JvmName("-deprecated_cipherSuite")
-  @Deprecated(
-      message = "moved to val",
-      replaceWith = ReplaceWith(expression = "cipherSuite"),
-      level = DeprecationLevel.ERROR)
-  fun cipherSuite() = cipherSuite
-
-  @JvmName("-deprecated_peerCertificates")
-  @Deprecated(
-      message = "moved to val",
-      replaceWith = ReplaceWith(expression = "peerCertificates"),
-      level = DeprecationLevel.ERROR)
-  fun peerCertificates() = peerCertificates
-
   /** Returns the remote peer's principle, or null if that peer is anonymous. */
   @get:JvmName("peerPrincipal")
   val peerPrincipal: Principal?
     get() = (peerCertificates.firstOrNull() as? X509Certificate)?.subjectX500Principal
 
-  @JvmName("-deprecated_peerPrincipal")
-  @Deprecated(
-      message = "moved to val",
-      replaceWith = ReplaceWith(expression = "peerPrincipal"),
-      level = DeprecationLevel.ERROR)
-  fun peerPrincipal() = peerPrincipal
-
-  @JvmName("-deprecated_localCertificates")
-  @Deprecated(
-      message = "moved to val",
-      replaceWith = ReplaceWith(expression = "localCertificates"),
-      level = DeprecationLevel.ERROR)
-  fun localCertificates() = localCertificates
-
   /** Returns the local principle, or null if this peer is anonymous. */
   @get:JvmName("localPrincipal")
   val localPrincipal: Principal?
     get() = (localCertificates.firstOrNull() as? X509Certificate)?.subjectX500Principal
-
-  @JvmName("-deprecated_localPrincipal")
-  @Deprecated(
-      message = "moved to val",
-      replaceWith = ReplaceWith(expression = "localPrincipal"),
-      level = DeprecationLevel.ERROR)
-  fun localPrincipal() = localPrincipal
 
   override fun equals(other: Any?): Boolean {
     return other is Handshake &&

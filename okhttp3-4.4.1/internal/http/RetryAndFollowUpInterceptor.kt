@@ -63,6 +63,7 @@ class RetryAndFollowUpInterceptor(private val client: OkHttpClient) : Intercepto
     var newExchangeFinder = true
     while (true) {
       // ========== 前置工作 开始 ===============
+      // 根据需要创建ExchangeFinder
       call.enterNetworkInterceptorExchange(request, newExchangeFinder)
 
       var response: Response
@@ -73,9 +74,9 @@ class RetryAndFollowUpInterceptor(private val client: OkHttpClient) : Intercepto
         }
 
         try {
-          // ========== 前置工作 结束 ============
+          // =========== 前置工作 结束 ============
           response = realChain.proceed(request) // 中置工作
-          // =========== 后置工作 开始 ===========
+          // =========== 后置工作 开始 ============
           newExchangeFinder = true
         } catch (e: RouteException) {
           // The attempt to connect via a route failed. The request will not have been sent.
@@ -364,6 +365,7 @@ class RetryAndFollowUpInterceptor(private val client: OkHttpClient) : Intercepto
 
   private fun retryAfter(userResponse: Response, defaultDelay: Int): Int {
     // 响应头的Retry-After字段是否为空 如果为空则返回defaultDelay
+    // Retry-After响应的 HTTP 报头指示所述用户代理应该多长时间使一个后续请求之前等待
     val header = userResponse.header("Retry-After") ?: return defaultDelay
 
     // https://tools.ietf.org/html/rfc7231#section-7.1.3

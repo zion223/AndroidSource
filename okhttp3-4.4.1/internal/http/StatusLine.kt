@@ -87,6 +87,7 @@ class StatusLine(
       if (statusLine.length < codeStart + 3) {
         throw ProtocolException("Unexpected status line: $statusLine")
       }
+      // 解析HTTP响应码
       val code = try {
         Integer.parseInt(statusLine.substring(codeStart, codeStart + 3))
       } catch (_: NumberFormatException) {
@@ -102,7 +103,7 @@ class StatusLine(
         }
         message = statusLine.substring(codeStart + 4)
       }
-      // HTTP协议版本 状态码 相应报文内容
+      // HTTP协议版本 状态码 相应报文内容 eg. HTTP/1.1 200 OK
       return StatusLine(protocol, code, message)
     }
   }

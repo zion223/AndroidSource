@@ -118,26 +118,7 @@ class Response internal constructor(
 
   private var lazyCacheControl: CacheControl? = null
 
-  @JvmName("-deprecated_request")
-  @Deprecated(
-      message = "moved to val",
-      replaceWith = ReplaceWith(expression = "request"),
-      level = DeprecationLevel.ERROR)
-  fun request(): Request = request
-
-  @JvmName("-deprecated_protocol")
-  @Deprecated(
-      message = "moved to val",
-      replaceWith = ReplaceWith(expression = "protocol"),
-      level = DeprecationLevel.ERROR)
-  fun protocol(): Protocol = protocol
-
-  @JvmName("-deprecated_code")
-  @Deprecated(
-      message = "moved to val",
-      replaceWith = ReplaceWith(expression = "code"),
-      level = DeprecationLevel.ERROR)
-  fun code(): Int = code
+  
 
   /**
    * Returns true if the code is in [200..300), which means the request was successfully received,
@@ -146,31 +127,12 @@ class Response internal constructor(
   val isSuccessful: Boolean
     get() = code in 200..299
 
-  @JvmName("-deprecated_message")
-  @Deprecated(
-      message = "moved to val",
-      replaceWith = ReplaceWith(expression = "message"),
-      level = DeprecationLevel.ERROR)
-  fun message(): String = message
-
-  @JvmName("-deprecated_handshake")
-  @Deprecated(
-      message = "moved to val",
-      replaceWith = ReplaceWith(expression = "handshake"),
-      level = DeprecationLevel.ERROR)
-  fun handshake(): Handshake? = handshake
+  
 
   fun headers(name: String): List<String> = headers.values(name)
 
   @JvmOverloads
   fun header(name: String, defaultValue: String? = null): String? = headers[name] ?: defaultValue
-
-  @JvmName("-deprecated_headers")
-  @Deprecated(
-      message = "moved to val",
-      replaceWith = ReplaceWith(expression = "headers"),
-      level = DeprecationLevel.ERROR)
-  fun headers(): Headers = headers
 
   /**
    * Returns the trailers after the HTTP response, which may be empty. It is an error to call this
@@ -199,12 +161,6 @@ class Response internal constructor(
     return buffer.asResponseBody(body.contentType(), buffer.size)
   }
 
-  @JvmName("-deprecated_body")
-  @Deprecated(
-      message = "moved to val",
-      replaceWith = ReplaceWith(expression = "body"),
-      level = DeprecationLevel.ERROR)
-  fun body(): ResponseBody? = body
 
   fun newBuilder(): Builder = Builder(this)
 
@@ -215,26 +171,6 @@ class Response internal constructor(
       else -> false
     }
 
-  @JvmName("-deprecated_networkResponse")
-  @Deprecated(
-      message = "moved to val",
-      replaceWith = ReplaceWith(expression = "networkResponse"),
-      level = DeprecationLevel.ERROR)
-  fun networkResponse(): Response? = networkResponse
-
-  @JvmName("-deprecated_cacheResponse")
-  @Deprecated(
-      message = "moved to val",
-      replaceWith = ReplaceWith(expression = "cacheResponse"),
-      level = DeprecationLevel.ERROR)
-  fun cacheResponse(): Response? = cacheResponse
-
-  @JvmName("-deprecated_priorResponse")
-  @Deprecated(
-      message = "moved to val",
-      replaceWith = ReplaceWith(expression = "priorResponse"),
-      level = DeprecationLevel.ERROR)
-  fun priorResponse(): Response? = priorResponse
 
   /**
    * Returns the RFC 7235 authorization challenges appropriate for this response's code. If the
@@ -271,26 +207,7 @@ class Response internal constructor(
       return result
     }
 
-  @JvmName("-deprecated_cacheControl")
-  @Deprecated(
-      message = "moved to val",
-      replaceWith = ReplaceWith(expression = "cacheControl"),
-      level = DeprecationLevel.ERROR)
-  fun cacheControl(): CacheControl = cacheControl
 
-  @JvmName("-deprecated_sentRequestAtMillis")
-  @Deprecated(
-      message = "moved to val",
-      replaceWith = ReplaceWith(expression = "sentRequestAtMillis"),
-      level = DeprecationLevel.ERROR)
-  fun sentRequestAtMillis(): Long = sentRequestAtMillis
-
-  @JvmName("-deprecated_receivedResponseAtMillis")
-  @Deprecated(
-      message = "moved to val",
-      replaceWith = ReplaceWith(expression = "receivedResponseAtMillis"),
-      level = DeprecationLevel.ERROR)
-  fun receivedResponseAtMillis(): Long = receivedResponseAtMillis
 
   /**
    * Closes the response body. Equivalent to `body().close()`.

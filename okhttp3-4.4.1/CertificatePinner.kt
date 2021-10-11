@@ -199,10 +199,7 @@ class CertificatePinner internal constructor(
     throw SSLPeerUnverifiedException(message)
   }
 
-  @Deprecated(
-      "replaced with {@link #check(String, List)}.",
-      ReplaceWith("check(hostname, peerCertificates.toList())")
-  )
+
   @Throws(SSLPeerUnverifiedException::class)
   fun check(hostname: String, vararg peerCertificates: Certificate) {
     check(hostname, peerCertificates.toList())
