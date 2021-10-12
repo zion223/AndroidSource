@@ -29,6 +29,7 @@ object ConnectInterceptor : Interceptor {
   @Throws(IOException::class)
   override fun intercept(chain: Interceptor.Chain): Response {
     val realChain = chain as RealInterceptorChain
+    // 初始化exchange
     val exchange = realChain.call.initExchange(chain)
     val connectedChain = realChain.copy(exchange = exchange)
     // 无后置工作

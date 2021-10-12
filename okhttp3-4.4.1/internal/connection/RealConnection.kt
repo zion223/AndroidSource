@@ -372,6 +372,7 @@ class RealConnection(
       }
 
       // Force handshake. This can throw!
+      // 开始建立SSL握手
       sslSocket.startHandshake()
       // block for session establishment
       val sslSocketSession = sslSocket.session
@@ -403,11 +404,12 @@ class RealConnection(
       }
 
       // Check that the certificate pinner is satisfied by the certificates presented.
+      // 验证certificate pinner
       certificatePinner.check(address.url.host) {
         handshake!!.peerCertificates.map { it as X509Certificate }
       }
 
-      // Success! Save the handshake and the ALPN protocol.
+      // 握手成功 Save the handshake and the ALPN protocol.
       val maybeProtocol = if (connectionSpec.supportsTlsExtensions) {
         Platform.get().getSelectedProtocol(sslSocket)
       } else {
