@@ -33,8 +33,9 @@ class CallServerInterceptor(private val forWebSocket: Boolean) : Interceptor {
     val requestBody = request.body
     val sentRequestMillis = System.currentTimeMillis()
     /** 发送请求头
-     *  GET /user HTTP/1.1
+     *  POST /user HTTP/1.1
      *  Host: api.github.com
+     *  User-Agent: okhttp4.1.1
      *  Content-Type: application/json
      */
     exchange.writeRequestHeaders(request)
