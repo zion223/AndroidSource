@@ -68,7 +68,9 @@ public final class Looper {
     private static final String TAG = "Looper";
 
     // sThreadLocal.get() will return null unless you've called prepare().
+    // Looper示例保存在这个静态属性中
     static final ThreadLocal<Looper> sThreadLocal = new ThreadLocal<Looper>();
+    // 主线程的Looper实例
     private static Looper sMainLooper;  // guarded by Looper.class
 
     final MessageQueue mQueue;
@@ -81,11 +83,7 @@ public final class Looper {
     private long mSlowDispatchThresholdMs;
 
      /** Initialize the current thread as a looper.
-      * This gives you a chance to create handlers that then reference
-      * this looper, before actually starting the loop. Be sure to call
-      * {@link #loop()} after calling this method, and end it by calling
-      * {@link #quit()}.
-      * 为当前线程(子线程)创建消息队列Looper 默认是可以退出的
+      *  为当前线程(子线程)创建消息队列Looper 默认是可以退出的
       */
     public static void prepare() {
         prepare(true);
@@ -101,14 +99,14 @@ public final class Looper {
     }
 
     /**
-     * ActivityThread中的main()方法中被调用
+     * 在ActivityThread中的main()方法中被调用，作为application的Looper
      * Initialize the current thread as a looper, marking it as an
      * application's main looper. The main looper for your application
      * is created by the Android environment, so you should never need
      * to call this function yourself.  See also: {@link #prepare()}
      */
     public static void prepareMainLooper() {
-        prepare(false);
+        prepare(false); // 不可退出
         synchronized (Looper.class) {
             if (sMainLooper != null) {
                 throw new IllegalStateException("The main Looper has already been prepared.");

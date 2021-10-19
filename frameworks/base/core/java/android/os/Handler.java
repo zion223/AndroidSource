@@ -724,7 +724,7 @@ public class Handler {
         m.callback = r;
         return m;
     }
-    // Runnable的run方法
+    // Runnable的run方法 切换线程
     private static void handleCallback(Message message) {
         message.callback.run();
     }
