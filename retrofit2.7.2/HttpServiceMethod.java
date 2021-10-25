@@ -64,8 +64,12 @@ abstract class HttpServiceMethod<ResponseT, ReturnT> extends ServiceMethod<Retur
     } else {
       adapterType = method.getGenericReturnType();
     }
-    // adapterType就是需要适配器去进行转换的返回值的类型
-    // 查找对应的callAdapter  默认是DefaultCallAdapterFactory
+
+    /**
+     * adapterType就是需要适配器去进行转换的返回值的类型 查找对应的callAdapter
+     * Call<User> getUser() 对应 DefaultCallAdapterFactory
+     * Observer<User> getUserRx() 对应 RxJava2CallAdapterFactory
+     */
     CallAdapter<ResponseT, ReturnT> callAdapter =
         createCallAdapter(retrofit, method, adapterType, annotations);
     Type responseType = callAdapter.responseType();
@@ -89,8 +93,13 @@ abstract class HttpServiceMethod<ResponseT, ReturnT> extends ServiceMethod<Retur
     okhttp3.Call.Factory callFactory = retrofit.callFactory;
     // 判断是否是kotlin中的suspend方法
     if (!isKotlinSuspendFunction) {
-        // 如果不是kotlin的suspend方法  将callAdapter、responseConverter等传入CallAdapted构造方法
-        // 默认的callAdapter是DefaultCallAdapterFactory中的get()方法获取到的CallAdapter
+        // 如果不是kotlin的suspend方法  
+        /**
+         * requestFactory: requestFactory
+         * callFactory: okHttpClient
+         * responseConverter: eg. BuiltInConverters、GsonConverterFactory
+         * callAdapter: DefaultCallAdapterFactory类的get()方法返回的CallAdapter
+         */
       return new CallAdapted<>(requestFactory, callFactory, responseConverter, callAdapter);
     } else if (continuationWantsResponse) {
       // 返回类型是Response类型的
@@ -161,7 +170,7 @@ abstract class HttpServiceMethod<ResponseT, ReturnT> extends ServiceMethod<Retur
     @Override 
     protected ReturnT adapt(Call<ResponseT> call, Object[] args) {
       // 这里是DefaultCallAdapterFactory中的get()方法返回的匿名内部类的adapt()方法
-      // 返回的是 ExecutorCallbackCall
+      // 返回的是 ExecutorCallbackCall 就是最终执行enqueue()或者execute()的类
       return callAdapter.adapt(call);
     }
   }

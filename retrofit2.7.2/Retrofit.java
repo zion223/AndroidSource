@@ -47,18 +47,7 @@ import static java.util.Collections.unmodifiableList;
  * Retrofit adapts a Java interface to HTTP calls by using annotations on the declared methods to
  * define how requests are made. Create instances using {@linkplain Builder
  * the builder} and pass your interface to {@link #create} to generate an implementation.
- * <p>
- * For example,
- * Retrofit retrofit = new Retrofit.Builder()
- *     .baseUrl("https://api.example.com/")
- *     .addConverterFactory(GsonConverterFactory.create())
- *     .build();
- *
- * MyApi api = retrofit.create(MyApi.class);
- * Response<User> user = api.getUser().execute();
  * 
- * @author Bob Lee (bob@squareup.com)
- * @author Jake Wharton (jw@squareup.com)
  */
 public final class Retrofit {
   private final Map<Method, ServiceMethod<?>> serviceMethodCache = new ConcurrentHashMap<>();
@@ -94,6 +83,8 @@ public final class Retrofit {
   public <T> T create(final Class<T> service) {
     // 校验传入的service接口
     validateServiceInterface(service);
+    // 动态是指在运行时生成而不是编译期生成
+    // 代理是指运行时创建一个实现了一组给定接口的新类
     return (T) Proxy.newProxyInstance(service.getClassLoader(), new Class<?>[] { service },
         new InvocationHandler() {
           private final Platform platform = Platform.get();
@@ -120,12 +111,14 @@ public final class Retrofit {
       // 如果不是接口的话抛出异常        
       throw new IllegalArgumentException("API declarations must be interfaces.");
     }
-
+    // ArrayDeque双向队列
     Deque<Class<?>> check = new ArrayDeque<>(1);
     check.add(service);
     while (!check.isEmpty()) {
       Class<?> candidate = check.removeFirst();
-      // 接口中不允许有泛型<T> 形式
+      /**
+       * 接口类不允许是泛型<T> 形式  eg. public interface GithubService<T>{}
+       */
       if (candidate.getTypeParameters().length != 0) {
         StringBuilder message = new StringBuilder("Type parameters are unsupported on ")
             .append(candidate.getName());
@@ -137,7 +130,7 @@ public final class Retrofit {
       }
       Collections.addAll(check, candidate.getInterfaces());
     }
-    // 是否开启提前校验 可以校验接口的方法是否正确(但会影响性能)
+    // 是否开启提前校验 可以提前校验接口的方法是否正确(但会影响性能)
     if (validateEagerly) {
       Platform platform = Platform.get();
       for (Method method : service.getDeclaredMethods()) {
@@ -191,7 +184,7 @@ public final class Retrofit {
 
     int start = callAdapterFactories.indexOf(skipPast) + 1;
     for (int i = start, count = callAdapterFactories.size(); i < count; i++) {
-      // 获取CallAdapter
+      // 在callAdapterFactories中查找对应的CallAdapter
       CallAdapter<?, ?> adapter = callAdapterFactories.get(i).get(returnType, annotations, this);
       if (adapter != null) {
         return adapter;

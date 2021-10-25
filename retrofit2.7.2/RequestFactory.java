@@ -327,7 +327,8 @@ final class RequestFactory {
           try {
             // 参数类型是Continuation类型
             if (Utils.getRawType(parameterType) == Continuation.class) {
-              // 表明是kotlin中的suspend()方法                
+              // 表明是kotlin中的suspend()方法      
+              // suspend fun login(): String  => Object login(Continuation<String> var1)          
               isKotlinSuspendFunction = true;
               return null;
             }

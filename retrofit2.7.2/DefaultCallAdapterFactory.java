@@ -79,7 +79,7 @@ final class DefaultCallAdapterFactory extends CallAdapter.Factory {
       // 这里的delegate默认是OkHttpCall
       delegate.enqueue(new Callback<T>() {
         @Override public void onResponse(Call<T> call, final Response<T> response) {
-          // 默认是使用MainThreadExecutor来执行 将线程切回到前台
+          // 默认是使用MainThreadExecutor来执行 将线程切回到前台 UI线程
           callbackExecutor.execute(() -> {
             if (delegate.isCanceled()) {
               callback.onFailure(ExecutorCallbackCall.this, new IOException("Canceled"));
@@ -98,7 +98,7 @@ final class DefaultCallAdapterFactory extends CallAdapter.Factory {
     @Override public boolean isExecuted() {
       return delegate.isExecuted();
     }
-
+    // 调用的execute()方法最终调用到这里
     @Override public Response<T> execute() throws IOException {
       return delegate.execute();
     }

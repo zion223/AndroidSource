@@ -196,7 +196,7 @@ final class OkHttpCall<T> implements Call<T> {
   }
 
   private okhttp3.Call createRawCall() throws IOException {
-    // callFactory是OkHttpClient 返回的是okhttp3的call
+    // callFactory是OkHttpClient 返回的是okhttp3的call 实际上是RealCall
     okhttp3.Call call = callFactory.newCall(requestFactory.create(args));
     if (call == null) {
       throw new NullPointerException("Call.Factory returned null.");
