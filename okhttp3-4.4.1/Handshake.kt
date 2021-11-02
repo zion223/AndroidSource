@@ -133,14 +133,6 @@ class Handshake internal constructor(
       }
     }
 
-    @Throws(IOException::class)
-    @JvmName("-deprecated_get")
-    @Deprecated(
-        message = "moved to extension function",
-        replaceWith = ReplaceWith(expression = "sslSession.handshake()"),
-        level = DeprecationLevel.ERROR)
-    fun get(sslSession: SSLSession) = sslSession.handshake()
-
     @JvmStatic
     fun get(
       tlsVersion: TlsVersion,

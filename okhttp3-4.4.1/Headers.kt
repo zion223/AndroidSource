@@ -373,14 +373,6 @@ class Headers private constructor(
       return Headers(namesAndValues)
     }
 
-    @JvmName("-deprecated_of")
-    @Deprecated(
-        message = "function name changed",
-        replaceWith = ReplaceWith(expression = "headersOf(*namesAndValues)"),
-        level = DeprecationLevel.ERROR)
-    fun of(vararg namesAndValues: String): Headers {
-      return headersOf(*namesAndValues)
-    }
 
     /** Returns headers for the header names and values in the [Map]. */
     @JvmStatic
@@ -400,15 +392,6 @@ class Headers private constructor(
       }
 
       return Headers(namesAndValues as Array<String>)
-    }
-
-    @JvmName("-deprecated_of")
-    @Deprecated(
-        message = "function moved to extension",
-        replaceWith = ReplaceWith(expression = "headers.toHeaders()"),
-        level = DeprecationLevel.ERROR)
-    fun of(headers: Map<String, String>): Headers {
-      return headers.toHeaders()
     }
 
     private fun checkName(name: String) {
