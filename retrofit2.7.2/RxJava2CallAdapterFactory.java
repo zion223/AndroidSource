@@ -36,24 +36,12 @@ import retrofit2.Retrofit;
  * <p>
  * Adding this class to {@link Retrofit} allows you to return an {@link Observable},
  * {@link Flowable}, {@link Single}, {@link Completable} or {@link Maybe} from service methods.
- * <pre><code>
  * interface MyService {
- *   &#64;GET("user/me")
- *   Observable&lt;User&gt; getUser()
+ *   @GET("user/me")
+ *   Observable<User> getUser()
  * }
- * </code></pre>
  * There are three configurations supported for the {@code Observable}, {@code Flowable},
  * {@code Single}, {@link Completable} and {@code Maybe} type parameter:
- * <ul>
- * <li>Direct body (e.g., {@code Observable<User>}) calls {@code onNext} with the deserialized body
- * for 2XX responses and calls {@code onError} with {@link HttpException} for non-2XX responses and
- * {@link IOException} for network errors.</li>
- * <li>Response wrapped body (e.g., {@code Observable<Response<User>>}) calls {@code onNext}
- * with a {@link Response} object for all HTTP responses and calls {@code onError} with
- * {@link IOException} for network errors</li>
- * <li>Result wrapped body (e.g., {@code Observable<Result<User>>}) calls {@code onNext} with a
- * {@link Result} object for all HTTP responses and errors.</li>
- * </ul>
  */
 public final class RxJava2CallAdapterFactory extends CallAdapter.Factory {
   /**
