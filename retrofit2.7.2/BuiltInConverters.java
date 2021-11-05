@@ -30,7 +30,8 @@ final class BuiltInConverters extends Converter.Factory {
 
   @Override public @Nullable Converter<ResponseBody, ?> responseBodyConverter(
       Type type, Annotation[] annotations, Retrofit retrofit) {
-    // 返回类型是ResponseBody类型的          
+    // 返回的类型泛型是ResponseBody类型的          
+    // Call<ResponseBody> login();
     if (type == ResponseBody.class) {
       return Utils.isAnnotationPresent(annotations, Streaming.class)
           ? StreamingResponseBodyConverter.INSTANCE
