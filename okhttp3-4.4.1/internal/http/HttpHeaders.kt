@@ -207,6 +207,7 @@ fun CookieJar.receiveHeaders(url: HttpUrl, headers: Headers) {
   saveFromResponse(url, cookies)
 }
 
+
 /**
  * Returns true if the response headers and status indicate that this response has a (possibly
  * 0-length) body. See RFC 7231.
@@ -234,10 +235,5 @@ fun Response.promisesBody(): Boolean {
   return false
 }
 
-@Deprecated(
-    message = "No longer supported",
-    level = DeprecationLevel.ERROR,
-    replaceWith = ReplaceWith(expression = "response.promisesBody()"))
-fun hasBody(response: Response): Boolean {
-  return response.promisesBody()
-}
+
+

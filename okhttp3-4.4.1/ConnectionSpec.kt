@@ -231,14 +231,6 @@ class ConnectionSpec internal constructor(
       this.tlsVersions = tlsVersions.clone() as Array<String> // Defensive copy.
     }
 
-    @Deprecated("since OkHttp 3.13 all TLS-connections are expected to support TLS extensions.\n" +
-        "In a future release setting this to true will be unnecessary and setting it to false\n" +
-        "will have no effect.")
-    fun supportsTlsExtensions(supportsTlsExtensions: Boolean) = apply {
-      require(tls) { "no TLS extensions for cleartext connections" }
-      this.supportsTlsExtensions = supportsTlsExtensions
-    }
-
     fun build(): ConnectionSpec = ConnectionSpec(
         tls,
         supportsTlsExtensions,
