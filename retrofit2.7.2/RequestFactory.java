@@ -212,6 +212,10 @@ final class RequestFactory {
       return new RequestFactory(this);
     }
 
+    /**
+     *  GET、HEAD、OPTIONS、DELETE方法不能有body
+     *  POST、PATCH、PUT方法有body
+     */
     private void parseMethodAnnotation(Annotation annotation) {
       if (annotation instanceof DELETE) {
         parseHttpMethodAndPath("DELETE", ((DELETE) annotation).value(), false);
