@@ -72,7 +72,9 @@ abstract class HttpServiceMethod<ResponseT, ReturnT> extends ServiceMethod<Retur
      */
     CallAdapter<ResponseT, ReturnT> callAdapter =
         createCallAdapter(retrofit, method, adapterType, annotations);
+    // responseType是返回的泛型类型 <responseType>
     Type responseType = callAdapter.responseType();
+    // 如果返回的类型中泛型是Response  eg.Call<Response> 抛出异常     
     if (responseType == okhttp3.Response.class) {
       throw methodError(method, "'"
           + getRawType(responseType).getName()

@@ -38,6 +38,7 @@ final class DefaultCallAdapterFactory extends CallAdapter.Factory {
     if (getRawType(returnType) != Call.class) {
       return null;
     }
+    // 判断是不是带有泛型 参数化类型
     if (!(returnType instanceof ParameterizedType)) {
       throw new IllegalArgumentException(
           "Call return type must be parameterized as Call<Foo> or Call<? extends Foo>");
