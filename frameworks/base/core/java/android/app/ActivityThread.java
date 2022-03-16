@@ -6535,7 +6535,6 @@ public final class ActivityThread {
 
     public static void main(String[] args) {
 
-
         // Looper开启主线程的消息循环
         Looper.prepareMainLooper();
         // 创建ActivityThread

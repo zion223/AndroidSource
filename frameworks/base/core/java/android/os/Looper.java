@@ -55,15 +55,6 @@ import android.util.proto.ProtoOutputStream;
   *  }</pre>
   */
 public final class Looper {
-    /*
-     * API Implementation Note:
-     *
-     * This class contains the code required to set up and manage an event loop
-     * based on MessageQueue.  APIs that affect the state of the queue should be
-     * defined on MessageQueue or Handler rather than on Looper itself.  For example,
-     * idle handlers and sync barriers are defined on the queue whereas preparing the
-     * thread, looping, and quitting are defined on the looper.
-     */
 
     private static final String TAG = "Looper";
 
@@ -200,29 +191,6 @@ public final class Looper {
      */
     public boolean isCurrentThread() {
         return Thread.currentThread() == mThread;
-    }
-
-    /**
-     * Control logging of messages as they are processed by this Looper.  If
-     * enabled, a log message will be written to <var>printer</var>
-     * at the beginning and ending of each message dispatch, identifying the
-     * target Handler and message contents.
-     *
-     * @param printer A Printer object that will receive log messages, or
-     * null to disable message logging.
-     */
-    public void setMessageLogging(@Nullable Printer printer) {
-        mLogging = printer;
-    }
-
-    /** {@hide} */
-    public void setTraceTag(long traceTag) {
-        mTraceTag = traceTag;
-    }
-
-    /** {@hide} */
-    public void setSlowDispatchThresholdMs(long slowDispatchThresholdMs) {
-        mSlowDispatchThresholdMs = slowDispatchThresholdMs;
     }
 
     /**

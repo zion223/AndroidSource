@@ -458,21 +458,6 @@ public final class MessageQueue {
      * 在message queue中插入同步消息屏障
      * Posts a synchronization barrier to the Looper's message queue.
      *
-     * Message processing occurs as usual until the message queue encounters the
-     * synchronization barrier that has been posted.  When the barrier is encountered,
-     * later synchronous messages in the queue are stalled (prevented from being executed)
-     * until the barrier is released by calling {@link #removeSyncBarrier} and specifying
-     * the token that identifies the synchronization barrier.
-     *
-     * This method is used to immediately postpone execution of all subsequently posted
-     * synchronous messages until a condition is met that releases the barrier.
-     * Asynchronous messages (see {@link Message#isAsynchronous} are exempt from the barrier
-     * and continue to be processed as usual.
-     *
-     * This call must be always matched by a call to {@link #removeSyncBarrier} with
-     * the same token to ensure that the message queue resumes normal operation.
-     * Otherwise the application will probably hang!
-     *
      * @return A token that uniquely identifies the barrier.  This token must be
      * passed to {@link #removeSyncBarrier} to release the barrier.
      *
@@ -823,77 +808,6 @@ public final class MessageQueue {
          * after the current time.
          */
         boolean queueIdle();
-    }
-
-    /**
-     * A listener which is invoked when file descriptor related events occur.
-     */
-    public interface OnFileDescriptorEventListener {
-        /**
-         * File descriptor event: Indicates that the file descriptor is ready for input
-         * operations, such as reading.
-         * <p>
-         * The listener should read all available data from the file descriptor
-         * then return <code>true</code> to keep the listener active or <code>false</code>
-         * to remove the listener.
-         * </p><p>
-         * In the case of a socket, this event may be generated to indicate
-         * that there is at least one incoming connection that the listener
-         * should accept.
-         * </p><p>
-         * This event will only be generated if the {@link #EVENT_INPUT} event mask was
-         * specified when the listener was added.
-         * </p>
-         */
-        public static final int EVENT_INPUT = 1 << 0;
-
-        /**
-         * File descriptor event: Indicates that the file descriptor is ready for output
-         * operations, such as writing.
-         * <p>
-         * The listener should write as much data as it needs.  If it could not
-         * write everything at once, then it should return <code>true</code> to
-         * keep the listener active.  Otherwise, it should return <code>false</code>
-         * to remove the listener then re-register it later when it needs to write
-         * something else.
-         * </p><p>
-         * This event will only be generated if the {@link #EVENT_OUTPUT} event mask was
-         * specified when the listener was added.
-         * </p>
-         */
-        public static final int EVENT_OUTPUT = 1 << 1;
-
-        /**
-         * File descriptor event: Indicates that the file descriptor encountered a
-         * fatal error.
-         * <p>
-         * File descriptor errors can occur for various reasons.  One common error
-         * is when the remote peer of a socket or pipe closes its end of the connection.
-         * </p><p>
-         * This event may be generated at any time regardless of whether the
-         * {@link #EVENT_ERROR} event mask was specified when the listener was added.
-         * </p>
-         */
-        public static final int EVENT_ERROR = 1 << 2;
-
-        /** @hide */
-        @Retention(RetentionPolicy.SOURCE)
-        @IntDef(flag=true, value={EVENT_INPUT, EVENT_OUTPUT, EVENT_ERROR})
-        public @interface Events {}
-
-        /**
-         * Called when a file descriptor receives events.
-         *
-         * @param fd The file descriptor.
-         * @param events The set of events that occurred: a combination of the
-         * {@link #EVENT_INPUT}, {@link #EVENT_OUTPUT}, and {@link #EVENT_ERROR} event masks.
-         * @return The new set of events to watch, or 0 to unregister the listener.
-         *
-         * @see #EVENT_INPUT
-         * @see #EVENT_OUTPUT
-         * @see #EVENT_ERROR
-         */
-        @Events int onFileDescriptorEvents(@NonNull FileDescriptor fd, @Events int events);
     }
 
     private static final class FileDescriptorRecord {
