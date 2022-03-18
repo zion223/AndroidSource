@@ -22198,6 +22198,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
         final int specSize = MeasureSpec.getSize(measureSpec);
         final int result;
         switch (specMode) {
+            // 修正尺寸大小
             case MeasureSpec.AT_MOST:
                 if (specSize < size) {
                     result = specSize | MEASURED_STATE_TOO_SMALL;
@@ -22205,6 +22206,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
                     result = size;
                 }
                 break;
+            // 确定的尺寸值                
             case MeasureSpec.EXACTLY:
                 result = specSize;
                 break;

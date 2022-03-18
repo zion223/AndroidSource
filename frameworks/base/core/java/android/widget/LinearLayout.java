@@ -787,6 +787,10 @@ public class LinearLayout extends ViewGroup {
             // layout权重
             totalWeight += lp.weight;
             // 如果高度是0 并且设置了权重 useExcessSpace为true
+            /**
+             *  android:layout_height="0dp"
+             *  android:layout_weight="1"
+             */
             final boolean useExcessSpace = lp.height == 0 && lp.weight > 0;
             // 如果LinearLayout的高度模式为EXACTLY, 并且子View设置了权重
             if (heightMode == MeasureSpec.EXACTLY && useExcessSpace) {
