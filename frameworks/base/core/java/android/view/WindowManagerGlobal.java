@@ -310,7 +310,8 @@ public final class WindowManagerGlobal {
             // Start watching for system property changes.
             if (mSystemPropertyUpdater == null) {
                 mSystemPropertyUpdater = new Runnable() {
-                    @Override public void run() {
+                    @Override 
+                    public void run() {
                         synchronized (mLock) {
                             for (int i = mRoots.size() - 1; i >= 0; --i) {
                                 mRoots.get(i).loadSystemProperties();
@@ -552,55 +553,6 @@ public final class WindowManagerGlobal {
         if (!hasVisibleWindows) {
             ThreadedRenderer.trimMemory(
                     ComponentCallbacks2.TRIM_MEMORY_COMPLETE);
-        }
-    }
-
-    public void dumpGfxInfo(FileDescriptor fd, String[] args) {
-        FileOutputStream fout = new FileOutputStream(fd);
-        PrintWriter pw = new FastPrintWriter(fout);
-        try {
-            synchronized (mLock) {
-                final int count = mViews.size();
-
-                pw.println("Profile data in ms:");
-
-                for (int i = 0; i < count; i++) {
-                    ViewRootImpl root = mRoots.get(i);
-                    String name = getWindowName(root);
-                    pw.printf("\n\t%s (visibility=%d)", name, root.getHostVisibility());
-
-                    ThreadedRenderer renderer =
-                            root.getView().mAttachInfo.mThreadedRenderer;
-                    if (renderer != null) {
-                        renderer.dumpGfxInfo(pw, fd, args);
-                    }
-                }
-
-                pw.println("\nView hierarchy:\n");
-
-                int viewsCount = 0;
-                int displayListsSize = 0;
-                int[] info = new int[2];
-
-                for (int i = 0; i < count; i++) {
-                    ViewRootImpl root = mRoots.get(i);
-                    root.dumpGfxInfo(info);
-
-                    String name = getWindowName(root);
-                    pw.printf("  %s\n  %d views, %.2f kB of display lists",
-                            name, info[0], info[1] / 1024.0f);
-                    pw.printf("\n\n");
-
-                    viewsCount += info[0];
-                    displayListsSize += info[1];
-                }
-
-                pw.printf("\nTotal ViewRootImpl: %d\n", count);
-                pw.printf("Total Views:        %d\n", viewsCount);
-                pw.printf("Total DisplayList:  %.2f kB\n\n", displayListsSize / 1024.0f);
-            }
-        } finally {
-            pw.flush();
         }
     }
 
