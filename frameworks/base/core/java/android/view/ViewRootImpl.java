@@ -820,7 +820,8 @@ public final class ViewRootImpl implements ViewParent,
                     mInputEventReceiver = new WindowInputEventReceiver(mInputChannel,
                             Looper.myLooper());
                 }
-
+                // 将view的parent设置成当前的ViewRootImpl
+                // 在此之后 view的requestLayout()才会最终传递到ViewRootImpl去检查线程
                 view.assignParent(this);
                 mAddedTouchMode = (res & WindowManagerGlobal.ADD_FLAG_IN_TOUCH_MODE) != 0;
                 mAppVisible = (res & WindowManagerGlobal.ADD_FLAG_APP_VISIBLE) != 0;
@@ -3998,7 +3999,7 @@ public final class ViewRootImpl implements ViewParent,
             }
         }
     }
-
+    // 创建handler
     final ViewRootHandler mHandler = new ViewRootHandler();
 
     /**

@@ -781,9 +781,9 @@ public class Activity extends ContextThemeWrapper
         VoiceInteractor voiceInteractor;
     }
     /* package */ NonConfigurationInstances mLastNonConfigurationInstances;
-
+    // Activity持有的phoneWindow
     private Window mWindow;
-
+    // Activity持有的windowManager
     private WindowManager mWindowManager;
     /*package*/ View mDecor = null;
     /*package*/ boolean mWindowAdded = false;

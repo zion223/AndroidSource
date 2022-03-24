@@ -12943,12 +12943,12 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
             return clickable;
         }
         if (mTouchDelegate != null) {
-            // 交给代理类去处理 触摸代理 几乎无用
+            // 交给代理类去处理 触摸代理 几乎无用 (增加点击区域)
             if (mTouchDelegate.onTouchEvent(event)) {
                 return true;
             }
         }
-        // 如果当前View可以点击 或者当前View可以在悬停或长按时显示tip
+        // 如果当前View可以点击 或者当前View可以在悬停或长按时显示tip(解释性文字)
         // 返回true 表示消耗事件
         // PS.像ImageView、TextView的默认clickable都为false 只有在设置了OnClickerListener后clickable属性才为true
         if (clickable || (viewFlags & TOOLTIP) == TOOLTIP) {
@@ -12960,7 +12960,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
                         handleTooltipUp();
                     }
                     if (!clickable) {
-                        // 当前view不可点击
+                        // 当前view不可点击  重置相关状态
                         // 移除tap的callback
                         removeTapCallback();
                         // 移除长按的callback
@@ -12976,7 +12976,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
                         // touch mode.
                         boolean focusTaken = false;
                         if (isFocusable() && isFocusableInTouchMode() && !isFocused()) {
-                            // 申请焦点
+                            // 申请焦点 EditText
                             focusTaken = requestFocus();
                         }
 
@@ -13030,6 +13030,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
                     break;
 
                 case MotionEvent.ACTION_DOWN:
+                    //触摸来源是手指触摸 而不是实体按键
                     if (event.getSource() == InputDevice.SOURCE_TOUCHSCREEN) {
                         mPrivateFlags3 |= PFLAG3_FINGER_DOWN;
                     }
@@ -13047,6 +13048,8 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
                     }
 
                     // Walk up the hierarchy to determine if we're inside a scrolling container.
+                    // 循环父View看 shouldDelayChildPressedState()方法的返回值
+                    // 自定义View时，只要不是滑动控件，都需要重写此方法并且返回false
                     boolean isInScrollingContainer = isInScrollingContainer();
 
                     // For views inside a scrolling container, delay the pressed feedback for
