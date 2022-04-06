@@ -143,7 +143,7 @@ public class GestureDetector {
 
         /**
          * Notified when an event within a double-tap gesture occurs, including
-         * the down, move, and up events.
+         * the down, move, and up events.(包括第二次按下后的移动和抬起事件)
          *
          * @param e The motion event that occurred during the double-tap gesture.
          * @return true if the event is consumed, else false
@@ -569,7 +569,7 @@ public class GestureDetector {
                 boolean hadTapMessage = mHandler.hasMessages(TAP);
                 // 移除TAP消息，如果有
                 if (hadTapMessage) mHandler.removeMessages(TAP);
-                // 判断是否是双击事件
+                // 判断是否是双击事件 300ms内双击
                 if ((mCurrentDownEvent != null) && (mPreviousUpEvent != null) && hadTapMessage &&
                         isConsideredDoubleTap(mCurrentDownEvent, mPreviousUpEvent, ev)) {
                     // This is a second tap
@@ -797,7 +797,7 @@ public class GestureDetector {
         if (!mAlwaysInBiggerTapRegion) {
             return false;
         }
-        // 两个点击的间隔事件
+        // 两个点击的间隔事件  大于40ms 小于300ms
         final long deltaTime = secondDown.getEventTime() - firstUp.getEventTime();
         if (deltaTime > DOUBLE_TAP_TIMEOUT || deltaTime < DOUBLE_TAP_MIN_TIME) {
             return false;
