@@ -469,7 +469,7 @@ class RealCall(
     }
 
     val host: String
-      get() = originalRequest.url.host
+        get() = originalRequest.url.host
 
     val request: Request
         get() = originalRequest

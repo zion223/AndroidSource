@@ -101,8 +101,8 @@ class RetryAndFollowUpInterceptor(private val client: OkHttpClient) : Intercepto
         if (priorResponse != null) {
           response = response.newBuilder()
               .priorResponse(priorResponse.newBuilder()
-                  .body(null)
-                  .build())
+              .body(null)
+              .build())
               .build()
         }
 
