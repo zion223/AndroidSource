@@ -81,6 +81,7 @@ final class DefaultCallAdapterFactory extends CallAdapter.Factory {
       delegate.enqueue(new Callback<T>() {
         @Override public void onResponse(Call<T> call, final Response<T> response) {
           // 默认是使用MainThreadExecutor来执行 将线程切回到前台 UI线程
+          // 最终的调用的是 Handler.post()方法
           callbackExecutor.execute(() -> {
             if (delegate.isCanceled()) {
               callback.onFailure(ExecutorCallbackCall.this, new IOException("Canceled"));

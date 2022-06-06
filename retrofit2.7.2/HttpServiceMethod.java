@@ -147,6 +147,9 @@ abstract class HttpServiceMethod<ResponseT, ReturnT> extends ServiceMethod<Retur
     this.responseConverter = responseConverter;
   }
 
+  /**
+   *  动态代理调用的方法
+   */
   @Override 
   final @Nullable ReturnT invoke(Object[] args) {
     // 创建OkHttpCall对象

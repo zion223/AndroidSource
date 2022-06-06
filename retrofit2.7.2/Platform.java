@@ -30,6 +30,7 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 
 class Platform {
+  // android平台
   private static final Platform PLATFORM = findPlatform();
 
   static Platform get() {
