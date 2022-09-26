@@ -250,6 +250,7 @@ class RealConnection(
     val url = tunnelRequest.url
     for (i in 0 until MAX_TUNNEL_ATTEMPTS) {
       connectSocket(connectTimeout, readTimeout, call, eventListener)
+      // Http Tunnel
       tunnelRequest = createTunnel(readTimeout, writeTimeout, tunnelRequest, url)
           ?: break // Tunnel successfully created.
 
@@ -646,7 +647,7 @@ class RealConnection(
   /** Returns true if this connection is ready to host new streams. */
   fun isHealthy(doExtensiveChecks: Boolean): Boolean {
     val nowNs = System.nanoTime()
-    // socket当前的状态
+    // socket当前的状态 
     val socket = this.socket!!
     val source = this.source!!
     if (socket.isClosed || socket.isInputShutdown || socket.isOutputShutdown) {

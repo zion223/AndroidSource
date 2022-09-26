@@ -60,6 +60,9 @@ class RetryAndFollowUpInterceptor(private val client: OkHttpClient) : Intercepto
     val call = realChain.call
     var followUpCount = 0
     var priorResponse: Response? = null
+    /**
+     * 是否需要重新创建ExchangeFinder
+     */
     var newExchangeFinder = true
     while (true) {
       // ========== 前置工作 开始 ===============

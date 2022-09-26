@@ -58,6 +58,7 @@ class Http2Writer(
     if (logger.isLoggable(FINE)) {
       logger.fine(format(">> CONNECTION ${CONNECTION_PREFACE.hex()}"))
     }
+    // "PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n".encodeUtf8()
     sink.write(CONNECTION_PREFACE)
     sink.flush()
   }

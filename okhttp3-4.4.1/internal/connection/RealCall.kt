@@ -171,12 +171,14 @@ class RealCall(
   internal fun getResponseWithInterceptorChain(): Response {
     // 拦截器集合
     val interceptors = mutableListOf<Interceptor>()
+    // 可以自定义Interceptor
     interceptors += client.interceptors
     interceptors += RetryAndFollowUpInterceptor(client) // 重试和重定向
     interceptors += BridgeInterceptor(client.cookieJar) // 桥接 
     interceptors += CacheInterceptor(client.cache) // 缓存
     interceptors += ConnectInterceptor // 连接
     if (!forWebSocket) {
+      // 网络调试使用
       interceptors += client.networkInterceptors
     }
     interceptors += CallServerInterceptor(forWebSocket) // 请求

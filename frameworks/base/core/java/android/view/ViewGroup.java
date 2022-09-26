@@ -7313,6 +7313,7 @@ public abstract class ViewGroup extends View implements ViewParent, ViewManager 
      *
      * The default implementation returns true for compatibility reasons. Subclasses that do
      * not scroll should generally override this method and return false.
+     * 继承ViewGroup的控件需要重写此方法来返回是否需要延迟显示按下状态
      */
     public boolean shouldDelayChildPressedState() {
         return true;

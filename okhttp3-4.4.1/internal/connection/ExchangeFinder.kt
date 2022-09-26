@@ -149,7 +149,7 @@ class ExchangeFinder(
 
       val callConnection = call.connection // changes within this overall method
       releasedConnection = callConnection
-      // 1. 要关闭的Socket
+      // 1. 要关闭的Socket 有可用的连接 但是无法使用
       toClose = if (callConnection != null && (callConnection.noNewExchanges ||
               !sameHostAndPort(callConnection.route().address.url))) {
         // 将连接release                
@@ -177,6 +177,7 @@ class ExchangeFinder(
           foundPooledConnection = true
           result = call.connection
         } else if (nextRouteToTry != null) {
+          // 使用暂时可用的缓存
           selectedRoute = nextRouteToTry
           nextRouteToTry = null
         }
@@ -265,7 +266,7 @@ class ExchangeFinder(
       // 5. 只多路复用模式再次尝试获取连接
       if (connectionPool.callAcquirePooledConnection(address, call, routes, true)) {
         // We lost the race! Close the connection we created and return the pooled connection.
-        // 销毁第四步刚创建的socket 
+        // 销毁第四步刚创建的socket，节省资源
         result!!.noNewExchanges = true
         socket = result!!.socket()
         result = call.connection
