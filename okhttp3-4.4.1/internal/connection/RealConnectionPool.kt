@@ -74,7 +74,7 @@ class RealConnectionPool(
     requireMultiplexed: Boolean
   ): Boolean {
     this.assertThreadHoldsLock()
-
+    // 遍历连接池
     for (connection in connections) {
       if (requireMultiplexed && !connection.isMultiplexed) continue
       // 判断连接是否合适

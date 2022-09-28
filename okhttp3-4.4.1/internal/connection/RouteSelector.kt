@@ -71,6 +71,7 @@ class RouteSelector(
       val proxy = nextProxy()
       for (inetSocketAddress in inetSocketAddresses) {
         val route = Route(address, proxy, inetSocketAddress)
+        //Returns true if [route] has failed recently and should be avoided.
         if (routeDatabase.shouldPostpone(route)) {
           postponedRoutes += route
         } else {

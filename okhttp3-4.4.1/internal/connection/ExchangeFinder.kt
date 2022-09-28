@@ -152,7 +152,7 @@ class ExchangeFinder(
       // 1. 要关闭的Socket 有可用的连接 但是无法使用
       toClose = if (callConnection != null && (callConnection.noNewExchanges ||
               !sameHostAndPort(callConnection.route().address.url))) {
-        // 将连接release                
+        // 将连接release
         call.releaseConnectionNoEvents()
       } else {
         null
@@ -256,6 +256,7 @@ class ExchangeFinder(
         call,
         eventListener
     )
+    // 放入Database
     call.client.routeDatabase.connected(result!!.route())
 
     var socket: Socket? = null

@@ -690,7 +690,7 @@ class RealConnection(
       address.proxySelector.connectFailed(
           address.url.toUri(), failedRoute.proxy.address(), failure)
     }
-
+    // 放入Database
     client.routeDatabase.failed(failedRoute)
   }
 
