@@ -12926,8 +12926,8 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
         final int viewFlags = mViewFlags;
         // 单点触摸，不支持多点触摸
         final int action = event.getAction();
-        // 只要有一个设置为true 则clickable设置为true
-        // 如果设置了OnClickListener则clickable为true
+        // 只要有一个设置为true 则clickable设置为true 消耗该事件
+        // 如果设置了OnClickListener则clickable为true 消耗该事件
         final boolean clickable = ((viewFlags & CLICKABLE) == CLICKABLE
                 || (viewFlags & LONG_CLICKABLE) == LONG_CLICKABLE)
                 || (viewFlags & CONTEXT_CLICKABLE) == CONTEXT_CLICKABLE;
@@ -12948,8 +12948,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
                 return true;
             }
         }
-        // 如果当前View可以点击 或者当前View可以在悬停或长按时显示tip(解释性文字)
-        // 返回true 表示消耗事件
+        // 如果当前View可以点击 或者当前View可以在悬停或长按时显示tip(解释性文字) 返回true 表示消耗事件
         // PS.像ImageView、TextView的默认clickable都为false 只有在设置了OnClickerListener后clickable属性才为true
         if (clickable || (viewFlags & TOOLTIP) == TOOLTIP) {
             switch (action) {

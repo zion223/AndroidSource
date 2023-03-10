@@ -2501,8 +2501,8 @@ public abstract class ViewGroup extends View implements ViewParent, ViewManager 
             /**
                 mFirstTouchTarget: First touch target in the linked list of touch targets.
                 mFirstTouchTarget 非多点触控：mFirstTouchTarget链表退化成单个TouchTarget对象。
-                               多点触控，目标相同：同样为单个TouchTarget对象，只是pointerIdBits保存了多个pointerId信息。
-                               多点触控，目标不同：mFirstTouchTarget成为链表。
+                               多点触控，目标View相同：同样为单个TouchTarget对象，只是pointerIdBits保存了多个pointerId信息。
+                               多点触控，目标View不同：mFirstTouchTarget成为链表。
              */
             // 当前事件类型是ACTION_DOWN事件(全新的事件序列)或者当前ViewGroup没有拦截事件并且交给子View处理             
             if (actionMasked == MotionEvent.ACTION_DOWN
