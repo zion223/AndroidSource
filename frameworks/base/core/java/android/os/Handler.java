@@ -93,6 +93,7 @@ public class Handler {
     /**
      * Handle system messages here.
      * 由Looper中调用，处理消息
+     * msg.target.dispatchMessage(msg)
      */
     public void dispatchMessage(Message msg) {
         if (msg.callback != null) {
@@ -202,7 +203,7 @@ public class Handler {
                     klass.getCanonicalName());
             }
         }
-        // Return the Looper object associated with the current thread
+        // 获取和当前线程关联的looper
         mLooper = Looper.myLooper();
         if (mLooper == null) {
             throw new RuntimeException(

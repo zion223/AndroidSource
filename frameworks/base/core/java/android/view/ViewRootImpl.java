@@ -3481,6 +3481,7 @@ public final class ViewRootImpl implements ViewParent,
     void dispatchDetachedFromWindow() {
         if (mView != null && mView.mAttachInfo != null) {
             mAttachInfo.mTreeObserver.dispatchOnWindowAttachedChange(false);
+            // 回调onDetachedFromWindow()方法
             mView.dispatchDetachedFromWindow();
         }
 
@@ -6341,6 +6342,7 @@ public final class ViewRootImpl implements ViewParent,
             }
             mRemoved = true;
             if (mAdded) {
+                // 移除View
                 dispatchDetachedFromWindow();
             }
 

@@ -2252,7 +2252,7 @@ public final class ActiveServices {
             r.pendingStarts.add(new ServiceRecord.StartItem(r, false, r.makeNextStartId(),
                     null, null, 0));
         }
-
+        // 调用Service的其他方法 比如onStartCommand
         sendServiceArgsLocked(r, execInFg, true);
 
         if (r.delayed) {

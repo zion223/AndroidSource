@@ -326,7 +326,7 @@ public final class MessageQueue {
             // 唤醒线程
             // 1.出现错误
             // 2.超时，有消息的触发时间到了
-            // 3.有新的的事件,如新消息插入
+            // 3.有新的事件,如新消息插入
             nativePollOnce(ptr, nextPollTimeoutMillis);
 
             synchronized (this) {
@@ -390,7 +390,7 @@ public final class MessageQueue {
                 }
                 if (pendingIdleHandlerCount <= 0) {
                     // No idle handlers to run.  Loop and wait some more.
-                    // 设置当前为block状态
+                    // 没有idle handler需要执行 设置当前为block状态
                     mBlocked = true;
                     continue;
                 }
@@ -401,7 +401,7 @@ public final class MessageQueue {
                 mPendingIdleHandlers = mIdleHandlers.toArray(mPendingIdleHandlers);
             }
 
-            // Run the idle handlers.
+            // Run the idle handlers. 执行Idle Handler
             // We only ever reach this code block during the first iteration.
             for (int i = 0; i < pendingIdleHandlerCount; i++) {
                 final IdleHandler idler = mPendingIdleHandlers[i];
@@ -409,6 +409,7 @@ public final class MessageQueue {
 
                 boolean keep = false;
                 try {
+                    // 执行任务
                     keep = idler.queueIdle();
                 } catch (Throwable t) {
                     Log.wtf(TAG, "IdleHandler threw exception", t);
@@ -416,12 +417,14 @@ public final class MessageQueue {
 
                 if (!keep) {
                     synchronized (this) {
+                        // 执行完一次 就移除
                         mIdleHandlers.remove(idler);
                     }
                 }
             }
 
             // Reset the idle handler count to 0 so we do not run them again.
+            // 重置idle handler数量
             pendingIdleHandlerCount = 0;
 
             // While calling an idle handler, a new message could have been delivered
@@ -548,7 +551,7 @@ public final class MessageQueue {
         if (msg.isInUse()) {
             throw new IllegalStateException(msg + " This message is already in use.");
         }
-
+        // 保证线程安全
         synchronized (this) {
             if (mQuitting) {
                 IllegalStateException e = new IllegalStateException(
@@ -573,7 +576,7 @@ public final class MessageQueue {
                 // Inserted within the middle of the queue.  Usually we don't have to wake
                 // up the event queue unless there is a barrier at the head of the queue
                 // and the message is the earliest asynchronous message in the queue.
-                // 如果当前队列的head是屏障消息并且当前消息是异步的时才需要唤醒队列
+                // 如果当前队列的head是同步屏障消息并且当前消息是异步的时才需要唤醒队列
                 needWake = mBlocked && p.target == null && msg.isAsynchronous();
                 Message prev;
                 for (;;) {

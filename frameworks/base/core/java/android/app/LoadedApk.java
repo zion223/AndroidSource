@@ -1623,6 +1623,7 @@ public final class LoadedApk {
             }
             // If there is a new service, it is now connected.
             if (service != null) {
+                // 回调onServiceConnected()方法
                 mConnection.onServiceConnected(name, service);
             }
         }

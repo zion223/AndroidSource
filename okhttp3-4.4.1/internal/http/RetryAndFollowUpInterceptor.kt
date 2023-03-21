@@ -335,6 +335,7 @@ class RetryAndFollowUpInterceptor(private val client: OkHttpClient) : Intercepto
 
     // If configured, don't follow redirects between SSL and non-SSL.
     // 如果配置followSslRedirects为false 那么不能在HTTP和HTTPS之间重定向
+    // scheme either "http" or "https".
     val sameScheme = url.scheme == userResponse.request.url.scheme
     if (!sameScheme && !client.followSslRedirects) return null
 

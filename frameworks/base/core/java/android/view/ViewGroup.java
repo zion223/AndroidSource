@@ -2589,7 +2589,7 @@ public abstract class ViewGroup extends View implements ViewParent, ViewManager 
                                 childWithAccessibilityFocus = null;
                                 i = childrenCount - 1;
                             }
-
+                            // 判断触摸点是否在view区域内 针对属性动画做特殊的处理
                             if (!canViewReceivePointerEvents(child)
                                     || !isTransformedTouchPointInView(x, y, child, null)) {
                                 ev.setTargetAccessibilityFocus(false);
@@ -2928,6 +2928,7 @@ public abstract class ViewGroup extends View implements ViewParent, ViewManager 
         final float[] point = getTempPoint();
         point[0] = x;
         point[1] = y;
+        // 进行位置的转换
         transformPointToViewLocal(point, child);
         final boolean isInView = child.pointInView(point[0], point[1]);
         if (isInView && outLocalPoint != null) {
@@ -2944,7 +2945,7 @@ public abstract class ViewGroup extends View implements ViewParent, ViewManager 
         point[1] += mScrollY - child.mTop;
 
         if (!child.hasIdentityMatrix()) {
-            child.getInverseMatrix().mapPoints(point);
+            child.getInverseMatrix().mapPoints(point); // 如果view做过属性动画 那么将对应的point进行转换
         }
     }
 

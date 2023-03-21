@@ -18817,6 +18817,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
         Transformation transformToApply = null;
         boolean concatMatrix = false;
         final boolean scalingRequired = mAttachInfo != null && mAttachInfo.mScalingRequired;
+        // 获取动画
         final Animation a = getAnimation();
         if (a != null) {
             more = applyLegacyAnimation(parent, drawingTime, a, scalingRequired);
@@ -18824,7 +18825,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
             if (concatMatrix) {
                 mPrivateFlags3 |= PFLAG3_VIEW_IS_ANIMATING_TRANSFORM;
             }
-            transformToApply = parent.getChildTransformation();
+            transformToApply = parent.getChildTransformation();  // 获取Transformation对象
         } else {
             if ((mPrivateFlags3 & PFLAG3_VIEW_IS_ANIMATING_TRANSFORM) != 0) {
                 // No longer animating: clear out old animation matrix
@@ -18946,7 +18947,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
                             // Undo the scroll translation, apply the transformation matrix,
                             // then redo the scroll translate to get the correct result.
                             canvas.translate(-transX, -transY);
-                            canvas.concat(transformToApply.getMatrix());
+                            canvas.concat(transformToApply.getMatrix()); // 应用matrix
                             canvas.translate(transX, transY);
                         }
                         parent.mGroupFlags |= ViewGroup.FLAG_CLEAR_TRANSFORMATION;
@@ -22348,7 +22349,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
     }
 
     /**
-     * Start the specified animation now.
+     * 开启View动画 Start the specified animation now.
      *
      * @param animation the animation to start now
      */

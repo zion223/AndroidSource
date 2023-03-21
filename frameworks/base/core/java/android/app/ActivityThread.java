@@ -3395,7 +3395,7 @@ public final class ActivityThread {
                 data.info.applicationInfo, data.compatInfo);
         Service service = null;
         try {
-            // 通过反射创建Service
+            // 通过类加载器创建Service实例
             java.lang.ClassLoader cl = packageInfo.getClassLoader();
             service = (Service) cl.loadClass(data.info.name).newInstance();
         } catch (Exception e) {
@@ -3408,14 +3408,14 @@ public final class ActivityThread {
 
         try {
             if (localLOGV) Slog.v(TAG, "Creating service " + data.info.name);
-
+            // 创建Application对象
             ContextImpl context = ContextImpl.createAppContext(this, packageInfo);
             context.setOuterContext(service);
 
             Application app = packageInfo.makeApplication(false, mInstrumentation);
             service.attach(context, this, data.info.name, data.token, app,
                     ActivityManager.getService());
-            // onCreate被调用                    
+            // 回调onCreate()   
             service.onCreate();
             // 存入mServices
             mServices.put(data.token, service);

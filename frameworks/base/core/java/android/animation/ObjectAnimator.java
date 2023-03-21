@@ -987,6 +987,7 @@ public final class ObjectAnimator extends ValueAnimator {
         super.animateValue(fraction);
         int numValues = mValues.length;
         for (int i = 0; i < numValues; ++i) {
+            // 调用PropertyValuesHolder类的方法 通过反射调用setter方法 更新
             mValues[i].setAnimatedValue(target);
         }
     }
