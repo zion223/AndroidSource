@@ -149,7 +149,7 @@ public final class Retrofit {
     synchronized (serviceMethodCache) {
       result = serviceMethodCache.get(method);
       if (result == null) {
-        // 返回的是ServiceMethod的子类
+        // 返回的是ServiceMethod的子类  HttpServiceMethod
         result = ServiceMethod.parseAnnotations(this, method);
         serviceMethodCache.put(method, result);
       }

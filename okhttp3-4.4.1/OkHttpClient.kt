@@ -124,9 +124,10 @@ open class OkHttpClient internal constructor(
 ) : Cloneable, Call.Factory, WebSocket.Factory {
 
   // 调度器，用于调度后台发起的网络请求，有后台总请求数和单主机总请求数的控制
+  // 底层是线程池 ThreadPoolExecutor
   @get:JvmName("dispatcher") val dispatcher: Dispatcher = builder.dispatcher
 
-  // 连接池
+  // 连接池  使用ArrayDeque实现
   @get:JvmName("connectionPool") val connectionPool: ConnectionPool = builder.connectionPool
 
   /**
@@ -134,7 +135,7 @@ open class OkHttpClient internal constructor(
    * the connection is established (if any) until after the response source is selected (either the
    * origin server, cache, or both).
    */
-  // 配置的interceptor 在连接建立前拦截
+  // 配置的interceptor 在连接建立前拦截 需要配置header需要用这个interceptor
   @get:JvmName("interceptors") val interceptors: List<Interceptor> =
       builder.interceptors.toImmutableList()
 
@@ -154,7 +155,7 @@ open class OkHttpClient internal constructor(
   @get:JvmName("retryOnConnectionFailure") val retryOnConnectionFailure: Boolean =
       builder.retryOnConnectionFailure
 
-  // 用于自动重新认证 在收到返回的状态码是401的情况下，直接调用authenticator在header中加入请求头发起请求
+  // 用于自动重新认证 在收到返回的状态码是401的情况下，直接调用authenticator在header中加入请求头重新发起请求
   @get:JvmName("authenticator") val authenticator: Authenticator = builder.authenticator
 
   // 遇到重定向的情况下是否自动follow
@@ -163,18 +164,19 @@ open class OkHttpClient internal constructor(
   // 在重定向是在HTTP和HTTPS之间的情况下是否自动follow
   @get:JvmName("followSslRedirects") val followSslRedirects: Boolean = builder.followSslRedirects
 
-  // 管理Cookie控制器
+  // 管理Cookie控制器  默认是空实现
   @get:JvmName("cookieJar") val cookieJar: CookieJar = builder.cookieJar
 
   // Cache
   @get:JvmName("cache") val cache: Cache? = builder.cache
 
-  // Dns查找
+  // Dns查找 
   @get:JvmName("dns") val dns: Dns = builder.dns
 
   // 配置代理
   @get:JvmName("proxy") val proxy: Proxy? = builder.proxy
 
+  // 默认是直连 Proxy.NO_PROXY
   @get:JvmName("proxySelector") val proxySelector: ProxySelector =
       when {
         // Defer calls to ProxySelector.getDefault() because it can throw a SecurityException.
@@ -185,6 +187,7 @@ open class OkHttpClient internal constructor(
   @get:JvmName("proxyAuthenticator") val proxyAuthenticator: Authenticator =
       builder.proxyAuthenticator
 
+  // 创建socket
   @get:JvmName("socketFactory") val socketFactory: SocketFactory = builder.socketFactory
 
   private val sslSocketFactoryOrNull: SSLSocketFactory?
@@ -199,10 +202,10 @@ open class OkHttpClient internal constructor(
   @get:JvmName("connectionSpecs") val connectionSpecs: List<ConnectionSpec> =
       builder.connectionSpecs
 
-  // 传输协议
+  // 传输协议 eg.http/1.0 http/1.1
   @get:JvmName("protocols") val protocols: List<Protocol> = builder.protocols
 
-  // 验证Https握手过程下载到的整数所属者是否和自己要访问的主机名一致
+  // 验证Https握手过程下载到的证书所属者是否和自己要访问的主机名一致
   @get:JvmName("hostnameVerifier") val hostnameVerifier: HostnameVerifier = builder.hostnameVerifier
 
   // 给主机名配置 验证证书
@@ -844,6 +847,7 @@ open class OkHttpClient internal constructor(
   companion object {
     internal val DEFAULT_PROTOCOLS = immutableListOf(HTTP_2, HTTP_1_1)
 
+    // 默认的连接的配置
     internal val DEFAULT_CONNECTION_SPECS = immutableListOf(
         ConnectionSpec.MODERN_TLS, ConnectionSpec.CLEARTEXT)
 

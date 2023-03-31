@@ -94,7 +94,7 @@ class RealInterceptorChain(
     }
 
     // Call the next interceptor in the chain.
-    // 调用下一个interceptor
+    // 递归调用下一个interceptor
     val next = copy(index = index + 1, request = request)
     val interceptor = interceptors[index]
 

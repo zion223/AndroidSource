@@ -73,7 +73,7 @@ class ExchangeFinder(
     chain: RealInterceptorChain
   ): ExchangeCodec {
     try {
-      // 找到健康的连接
+      // 找到可用的连接
       val resultConnection = findHealthyConnection(
           connectTimeout = chain.connectTimeoutMillis,
           readTimeout = chain.readTimeoutMillis,
@@ -107,6 +107,7 @@ class ExchangeFinder(
     doExtensiveHealthChecks: Boolean
   ): RealConnection {
     while (true) {
+      // 不断的死循环查找可用的连接
       val candidate = findConnection(
           connectTimeout = connectTimeout,
           readTimeout = readTimeout,
@@ -152,7 +153,7 @@ class ExchangeFinder(
       // 1. 要关闭的Socket 有可用的连接 但是无法使用
       toClose = if (callConnection != null && (callConnection.noNewExchanges ||
               !sameHostAndPort(callConnection.route().address.url))) {
-        // 将连接release
+        // 将连接释放
         call.releaseConnectionNoEvents()
       } else {
         null
@@ -197,7 +198,7 @@ class ExchangeFinder(
     }
 
     // If we need a route selection, make one. This is a blocking operation.
-    // Selector -> Selection(val routes: List<Route>) -> Route 层级遍历
+    // RouteSelector -> Selection(val routes: List<Route>) -> Route 层级遍历
     var newRouteSelection = false
     if (selectedRoute == null && (routeSelection == null || !routeSelection!!.hasNext())) {
       var localRouteSelector = routeSelector
@@ -260,6 +261,7 @@ class ExchangeFinder(
     call.client.routeDatabase.connected(result!!.route())
 
     var socket: Socket? = null
+    // 线程安全
     synchronized(connectionPool) {
       connectingConnection = null
       // Last attempt at connection coalescing, which only occurs if we attempted multiple

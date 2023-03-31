@@ -177,6 +177,7 @@ class RealConnection(
             "CLEARTEXT communication to $host not permitted by network security policy"))
       }
     } else {
+      // 明文传输的HTTP2
       if (Protocol.H2_PRIOR_KNOWLEDGE in route.address.protocols) {
         throw RouteException(UnknownServiceException(
             "H2_PRIOR_KNOWLEDGE cannot be used with HTTPS"))
@@ -544,7 +545,7 @@ class RealConnection(
     // https://hpbn.co/optimizing-application-delivery/#eliminate-domain-sharding
     // https://daniel.haxx.se/blog/2016/08/18/http2-connection-coalescing/
 
-    //  HTTP/2 连接合并
+    //  HTTP/2 连接合并 connection coalescing
     // 1. This connection must be HTTP/2.
     if (http2Connection == null) return false
 

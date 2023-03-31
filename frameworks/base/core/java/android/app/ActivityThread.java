@@ -228,6 +228,7 @@ public final class ActivityThread {
 
     final ApplicationThread mAppThread = new ApplicationThread();
     final Looper mLooper = Looper.myLooper();
+    // 处理各种操作的Handler
     final H mH = new H();
     // 存储了所有的Activity
     final ArrayMap<IBinder, ActivityClientRecord> mActivities = new ArrayMap<>();
@@ -1587,6 +1588,7 @@ public final class ActivityThread {
             }
             return Integer.toString(code);
         }
+        // 重写handleMessage方法
         public void handleMessage(Message msg) {
             if (DEBUG_MESSAGES) Slog.v(TAG, ">>> handling: " + codeToString(msg.what));
             switch (msg.what) {
@@ -1918,6 +1920,7 @@ public final class ActivityThread {
                         (a.activity != null && a.activity.mFinished));
                     if (a.activity != null && !a.activity.mFinished) {
                         try {
+                            // activity的onStop()和onDestroy()
                             am.activityIdle(a.token, a.createdConfig, stopProfiling);
                             a.createdConfig = null;
                         } catch (RemoteException ex) {
@@ -3810,6 +3813,7 @@ public final class ActivityThread {
                 mNewActivities = r;
                 if (localLOGV) Slog.v(
                     TAG, "Scheduling idle handler for " + r);
+                // 主线程空闲时会执行 Idler                    
                 Looper.myQueue().addIdleHandler(new Idler());
             }
             r.onlyLocalRequest = false;

@@ -164,6 +164,7 @@ class RouteSelector(
       eventListener.dnsStart(call, socketHost)
 
       // Try each address for best behavior in mixed IPv4/IPv6 environments.
+      // dns解析
       val addresses = address.dns.lookup(socketHost)
       if (addresses.isEmpty()) {
         throw UnknownHostException("${address.dns} returned no addresses for $socketHost")
