@@ -822,6 +822,8 @@ public class Glide implements ComponentCallbacks2 {
     // Do nothing.
   }
 
+
+  // 防止OOM
   @Override
   public void onLowMemory() {
     clearMemory();

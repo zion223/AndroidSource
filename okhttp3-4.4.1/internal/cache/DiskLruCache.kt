@@ -255,6 +255,7 @@ class DiskLruCache internal constructor(
 
   @Throws(IOException::class)
   private fun readJournal() {
+    // 文件系统
     fileSystem.source(journalFile).buffer().use { source ->
       val magic = source.readUtf8LineStrict()
       val version = source.readUtf8LineStrict()

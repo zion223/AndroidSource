@@ -595,7 +595,7 @@ public class RequestBuilder<TranscodeType> implements Cloneable,
 
     options = options.autoClone();
     Request request = buildRequest(target, targetListener, options);
-
+    // 获取target之前的请求
     Request previous = target.getRequest();
     if (request.isEquivalentTo(previous)
         && !isSkipMemoryCacheWithCompletePreviousRequest(options, previous)) {
@@ -614,6 +614,7 @@ public class RequestBuilder<TranscodeType> implements Cloneable,
     }
 
     requestManager.clear(target);
+    // 最终是通过setTag()方法，防止图片加载错乱
     target.setRequest(request);
     requestManager.track(target, request);
 

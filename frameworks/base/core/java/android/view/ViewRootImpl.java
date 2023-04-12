@@ -477,6 +477,7 @@ public final class ViewRootImpl implements ViewParent,
 
     public ViewRootImpl(Context context, Display display) {
         mContext = context;
+        // windowSession
         mWindowSession = WindowManagerGlobal.getWindowSession();
         mDisplay = display;
         mBasePackageName = context.getBasePackageName();
@@ -496,7 +497,7 @@ public final class ViewRootImpl implements ViewParent,
         mPreviousTransparentRegion = new Region();
         mFirst = true; // true for the first time the view is added
         mAdded = false;
-        // 创建AttachInfo
+        // 创建AttachInfo view.post()获取宽高
         mAttachInfo = new View.AttachInfo(mWindowSession, mWindow, display, this, mHandler, this,
                 context);
         mAccessibilityManager = AccessibilityManager.getInstance(context);
@@ -727,7 +728,7 @@ public final class ViewRootImpl implements ViewParent,
                     mOrigWindowType = mWindowAttributes.type;
                     mAttachInfo.mRecomputeGlobalAttributes = true;
                     collectViewAttributes();
-                    // 调用Session类的addToDisplay方法 最终通过IPC调用WindowManagerService的addView方法
+                    // 调用Session类的addToDisplay方法 最终通过IPC调用WindowManagerService的addWindow()方法
                     res = mWindowSession.addToDisplay(mWindow, mSeq, mWindowAttributes,
                             getHostVisibility(), mDisplay.getDisplayId(),
                             mAttachInfo.mContentInsets, mAttachInfo.mStableInsets,

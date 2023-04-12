@@ -24,6 +24,7 @@ import java.util.List;
 class EngineJob<R> implements DecodeJob.Callback<R>,
     Poolable {
   private static final EngineResourceFactory DEFAULT_FACTORY = new EngineResourceFactory();
+  // handler负责切换到主线程
   private static final Handler MAIN_THREAD_HANDLER =
       new Handler(Looper.getMainLooper(), new MainThreadCallback());
 

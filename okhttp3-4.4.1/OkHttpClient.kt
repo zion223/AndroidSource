@@ -124,7 +124,7 @@ open class OkHttpClient internal constructor(
 ) : Cloneable, Call.Factory, WebSocket.Factory {
 
   // 调度器，用于调度后台发起的网络请求，有后台总请求数和单主机总请求数的控制
-  // 底层是线程池 ThreadPoolExecutor
+  // 底层是线程池 ThreadPoolExecutor(0, Int.MAX_VALUE, 60, TimeUnit.SECONDS, SynchronousQueue(), threadFactory("$okHttpName Dispatcher", false))
   @get:JvmName("dispatcher") val dispatcher: Dispatcher = builder.dispatcher
 
   // 连接池  使用ArrayDeque实现

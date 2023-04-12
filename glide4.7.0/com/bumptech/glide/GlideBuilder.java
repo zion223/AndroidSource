@@ -38,8 +38,8 @@ public final class GlideBuilder {
   private BitmapPool bitmapPool;
   private ArrayPool arrayPool;
   private MemoryCache memoryCache;
-  private GlideExecutor sourceExecutor;
-  private GlideExecutor diskCacheExecutor;
+  private GlideExecutor sourceExecutor; //源文件线程池
+  private GlideExecutor diskCacheExecutor; // 硬盘缓存线程池
   private DiskCache.Factory diskCacheFactory;
   private MemorySizeCalculator memorySizeCalculator;
   private ConnectivityMonitorFactory connectivityMonitorFactory;

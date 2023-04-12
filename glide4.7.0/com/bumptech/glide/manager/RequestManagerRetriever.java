@@ -349,6 +349,7 @@ public class RequestManagerRetriever implements Handler.Callback {
   private RequestManager fragmentGet(@NonNull Context context,
       @NonNull android.app.FragmentManager fm,
       @Nullable android.app.Fragment parentHint) {
+    // 获取一个不可见的Fragment        
     RequestManagerFragment current = getRequestManagerFragment(fm, parentHint);
     RequestManager requestManager = current.getRequestManager();
     if (requestManager == null) {

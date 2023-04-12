@@ -169,7 +169,7 @@ public class Engine implements EngineJobListener,
 
     EngineKey key = keyFactory.buildKey(model, signature, width, height, transformations,
         resourceClass, transcodeClass, options);
-
+    // 从弱引用中取  弱引用在触发GC时就会回收 无论此时内存是否够用 
     EngineResource<?> active = loadFromActiveResources(key, isMemoryCacheable);
     if (active != null) {
       cb.onResourceReady(active, DataSource.MEMORY_CACHE);
@@ -178,7 +178,7 @@ public class Engine implements EngineJobListener,
       }
       return null;
     }
-
+    // 从LRU缓存中取 LruResourceCache
     EngineResource<?> cached = loadFromCache(key, isMemoryCacheable);
     if (cached != null) {
       cb.onResourceReady(cached, DataSource.MEMORY_CACHE);
@@ -260,6 +260,7 @@ public class Engine implements EngineJobListener,
     EngineResource<?> cached = getEngineResourceFromCache(key);
     if (cached != null) {
       cached.acquire();
+      // 放入到弱引用缓存中
       activeResources.activate(key, cached);
     }
     return cached;
@@ -298,6 +299,7 @@ public class Engine implements EngineJobListener,
       resource.setResourceListener(key, this);
 
       if (resource.isCacheable()) {
+        // 放入弱引用中
         activeResources.activate(key, resource);
       }
     }

@@ -167,7 +167,7 @@ class Dispatcher constructor() {
       val i = readyAsyncCalls.iterator()
       while (i.hasNext()) {
         val asyncCall = i.next()
-
+        // 最多同时支持64个请求，每个host地址同时只能发起5个请求
         if (runningAsyncCalls.size >= this.maxRequests) break // Max capacity.
         if (asyncCall.callsPerHost.get() >= this.maxRequestsPerHost) continue // Host max capacity.
 
