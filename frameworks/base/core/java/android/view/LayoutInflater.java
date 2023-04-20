@@ -640,13 +640,6 @@ public abstract class LayoutInflater {
                 advanceToRootNode(parser);
                 final String name = parser.getName();
 
-                if (DEBUG) {
-                    System.out.println("**************************");
-                    System.out.println("Creating root view: "
-                            + name);
-                    System.out.println("**************************");
-                }
-
                 if (TAG_MERGE.equals(name)) {
                     if (root == null || !attachToRoot) {
                         throw new InflateException("<merge /> can be used only with a valid "
@@ -661,10 +654,7 @@ public abstract class LayoutInflater {
                     ViewGroup.LayoutParams params = null;
 
                     if (root != null) {
-                        if (DEBUG) {
-                            System.out.println("Creating params from root: " +
-                                    root);
-                        }
+                        
                         // Create layout params that match root, if supplied
                         params = root.generateLayoutParams(attrs);
                         if (!attachToRoot) {
@@ -674,16 +664,8 @@ public abstract class LayoutInflater {
                         }
                     }
 
-                    if (DEBUG) {
-                        System.out.println("-----> start inflating children");
-                    }
-
                     // Inflate all children under temp against its context.
                     rInflateChildren(parser, temp, attrs, true);
-
-                    if (DEBUG) {
-                        System.out.println("-----> done inflating children");
-                    }
 
                     // We are supposed to attach all the views we found (int temp)
                     // to root. Do that now.
@@ -994,6 +976,7 @@ public abstract class LayoutInflater {
         }
 
         try {
+            // 创建view
             View view = tryCreateView(parent, name, context, attrs);
 
             if (view == null) {
@@ -1057,6 +1040,7 @@ public abstract class LayoutInflater {
         }
 
         View view;
+        // 通过Factory2接口的实现类来创建
         if (mFactory2 != null) {
             view = mFactory2.onCreateView(parent, name, context, attrs);
         } else if (mFactory != null) {

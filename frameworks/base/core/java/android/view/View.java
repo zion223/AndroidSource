@@ -15746,6 +15746,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
     public boolean post(Runnable action) {
         final AttachInfo attachInfo = mAttachInfo;
         if (attachInfo != null) {
+            //ViewRootHandler在UI线程执行
             return attachInfo.mHandler.post(action);
         }
 
@@ -17407,6 +17408,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
         }
         // Transfer all pending runnables.
         if (mRunQueue != null) {
+            // 执行待处理的runnables  通过ViewRootImpl的 ViewRootHandler
             mRunQueue.executeActions(info.mHandler);
             mRunQueue = null;
         }
@@ -18699,10 +18701,12 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
             a.initialize(mRight - mLeft, mBottom - mTop, parent.getWidth(), parent.getHeight());
             a.initializeInvalidateRegion(0, 0, mRight - mLeft, mBottom - mTop);
             if (mAttachInfo != null) a.setListenerHandler(mAttachInfo.mHandler);
+            // 动画回调
             onAnimationStart();
         }
 
         final Transformation t = parent.getChildTransformation();
+        // 应用动画 返回值表示动画是否执行完毕 true表示还没执行完
         boolean more = a.getTransformation(drawingTime, t, 1f);
         if (scalingRequired && mAttachInfo.mApplicationScale != 1f) {
             if (parent.mInvalidationTransformation == null) {
@@ -18715,7 +18719,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
         }
 
         if (more) {
-            if (!a.willChangeBounds()) {
+            if (!a.willChangeBounds()) {// 动画是否会改变view的bounds
                 if ((flags & (ViewGroup.FLAG_OPTIMIZE_INVALIDATE | ViewGroup.FLAG_ANIMATION_DONE)) ==
                         ViewGroup.FLAG_OPTIMIZE_INVALIDATE) {
                     parent.mGroupFlags |= ViewGroup.FLAG_INVALIDATE_REQUIRED;
@@ -18723,6 +18727,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
                     // The child need to draw an animation, potentially offscreen, so
                     // make sure we do not cancel invalidate requests
                     parent.mPrivateFlags |= PFLAG_DRAW_ANIMATION;
+                    // 触发重绘
                     parent.invalidate(mLeft, mTop, mRight, mBottom);
                 }
             } else {
@@ -18790,7 +18795,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
 
     /**
      * This method is called by ViewGroup.drawChild() to have each child view draw itself.
-     *
+     * 绘制在View
      * This is where the View specializes rendering behavior based on layer type,
      * and hardware acceleration.
      */

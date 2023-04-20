@@ -841,12 +841,13 @@ public abstract class Animation implements Cloneable {
      */
     public boolean getTransformation(long currentTime, Transformation outTransformation) {
         if (mStartTime == -1) {
+            // 记录开始时间 
             mStartTime = currentTime;
         }
 
         final long startOffset = getStartOffset();
         final long duration = mDuration;
-        float normalizedTime;
+        float normalizedTime; // 动画当前的进度
         if (duration != 0) {
             normalizedTime = ((float) (currentTime - (mStartTime + startOffset))) /
                     (float) duration;
@@ -874,8 +875,9 @@ public abstract class Animation implements Cloneable {
             if (mCycleFlip) {
                 normalizedTime = 1.0f - normalizedTime;
             }
-
+            // 使用插值器计算百分比
             final float interpolatedTime = mInterpolator.getInterpolation(normalizedTime);
+            // 应用动画
             applyTransformation(interpolatedTime, outTransformation);
         }
 

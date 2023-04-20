@@ -1032,6 +1032,7 @@ public class ValueAnimator extends Animator implements AnimationHandler.Animatio
         mLastFrameTime = -1;
         mFirstFrameTime = -1;
         mStartTime = -1;
+        // 通过AnimationHandler添加callback
         addAnimationCallback(0);
 
         if (mStartDelay == 0 || mSeekFraction >= 0 || mReversing) {
@@ -1443,6 +1444,7 @@ public class ValueAnimator extends Animator implements AnimationHandler.Animatio
         // time to avoid animating frames at negative time intervals.  In practice, this
         // is very rare and only happens when seeking backwards.
         final long currentTime = Math.max(frameTime, mStartTime);
+        // 动画的核心逻辑
         boolean finished = animateBasedOnTime(currentTime);
 
         if (finished) {
@@ -1519,6 +1521,7 @@ public class ValueAnimator extends Animator implements AnimationHandler.Animatio
         if (mUpdateListeners != null) {
             int numListeners = mUpdateListeners.size();
             for (int i = 0; i < numListeners; ++i) {
+                // 回调onAnimationUpdate 处理动画逻辑
                 mUpdateListeners.get(i).onAnimationUpdate(this);
             }
         }

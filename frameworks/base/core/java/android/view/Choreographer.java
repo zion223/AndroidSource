@@ -367,14 +367,6 @@ public final class Choreographer {
         return mFrameIntervalNanos;
     }
 
-    void dump(String prefix, PrintWriter writer) {
-        String innerPrefix = prefix + "  ";
-        writer.print(prefix); writer.println("Choreographer:");
-        writer.print(innerPrefix); writer.print("mFrameScheduled=");
-                writer.println(mFrameScheduled);
-        writer.print(innerPrefix); writer.print("mLastFrameTime=");
-                writer.println(TimeUtils.formatUptime(mLastFrameTimeNanos / 1000000));
-    }
 
     /**
      * Posts a callback to run on the next frame.
@@ -423,18 +415,15 @@ public final class Choreographer {
 
     private void postCallbackDelayedInternal(int callbackType,
             Object action, Object token, long delayMillis) {
-        if (DEBUG_FRAMES) {
-            Log.d(TAG, "PostCallback: type=" + callbackType
-                    + ", action=" + action + ", token=" + token
-                    + ", delayMillis=" + delayMillis);
-        }
 
         synchronized (mLock) {
             final long now = SystemClock.uptimeMillis();
             final long dueTime = now + delayMillis;
+            // 添加任务到queue中
             mCallbackQueues[callbackType].addCallbackLocked(dueTime, action, token);
 
             if (dueTime <= now) {
+                // 注册屏幕刷新信号
                 scheduleFrameLocked(now);
             } else {
                 Message msg = mHandler.obtainMessage(MSG_DO_SCHEDULE_CALLBACK, action);
@@ -604,6 +593,7 @@ public final class Choreographer {
                 // otherwise post a message to schedule the vsync from the UI thread
                 // as soon as possible.
                 if (isRunningOnLooperThreadLocked()) {
+                    // 向底层注册屏幕刷新信号
                     scheduleVsyncLocked();
                 } else {
                     Message msg = mHandler.obtainMessage(MSG_DO_SCHEDULE_VSYNC);
@@ -648,7 +638,7 @@ public final class Choreographer {
             if (jitterNanos >= mFrameIntervalNanos) {
                 final long skippedFrames = jitterNanos / mFrameIntervalNanos;
                 if (skippedFrames >= SKIPPED_FRAME_WARNING_LIMIT) {
-                    // 出现丢帧现象  超过30
+                    // 出现丢帧现象  超过30帧
                     Log.i(TAG, "Skipped " + skippedFrames + " frames!  "
                             + "The application may be doing too much work on its main thread.");
                 }
@@ -694,9 +684,11 @@ public final class Choreographer {
             doCallbacks(Choreographer.CALLBACK_INPUT, frameTimeNanos);
 
             mFrameInfo.markAnimationsStart();
+            // 属性动画
             doCallbacks(Choreographer.CALLBACK_ANIMATION, frameTimeNanos);
 
             mFrameInfo.markPerformTraversalsStart();
+            // view动画
             doCallbacks(Choreographer.CALLBACK_TRAVERSAL, frameTimeNanos);
 
             doCallbacks(Choreographer.CALLBACK_COMMIT, frameTimeNanos);
@@ -762,6 +754,7 @@ public final class Choreographer {
                             + ", action=" + c.action + ", token=" + c.token
                             + ", latencyMillis=" + (SystemClock.uptimeMillis() - c.dueTime));
                 }
+                // 执行任务
                 c.run(frameTimeNanos);
             }
         } finally {
@@ -889,23 +882,7 @@ public final class Choreographer {
 
         @Override
         public void onVsync(long timestampNanos, int builtInDisplayId, int frame) {
-            // Ignore vsync from secondary display.
-            // This can be problematic because the call to scheduleVsync() is a one-shot.
-            // We need to ensure that we will still receive the vsync from the primary
-            // display which is the one we really care about.  Ideally we should schedule
-            // vsync for a particular display.
-            // At this time Surface Flinger won't send us vsyncs for secondary displays
-            // but that could change in the future so let's log a message to help us remember
-            // that we need to fix this.
-            if (builtInDisplayId != SurfaceControl.BUILT_IN_DISPLAY_ID_MAIN) {
-                Log.d(TAG, "Received vsync from secondary display, but we don't support "
-                        + "this case yet.  Choreographer needs a way to explicitly request "
-                        + "vsync for a specific display to ensure it doesn't lose track "
-                        + "of its scheduled vsync.");
-                scheduleVsync();
-                return;
-            }
-
+            
             // Post the vsync event to the Handler.
             // The idea is to prevent incoming vsync events from completely starving
             // the message queue.  If there are no messages in the queue with timestamps

@@ -418,7 +418,7 @@ public class PhoneWindow extends Window implements MenuBuilder.Callback {
             // 转场动画                    
             transitionTo(newScene);
         } else {
-            // mContentParent加载布局文件
+            // mContentParent加载布局文件  R.android.id.content
             mLayoutInflater.inflate(layoutResID, mContentParent);
         }
         mContentParent.requestApplyInsets();

@@ -1254,6 +1254,7 @@ public final class ViewRootImpl implements ViewParent,
             localDirty.setEmpty();
         }
         if (!mWillDrawSoon && (intersected || mIsAnimating)) {
+            // 重绘
             scheduleTraversals();
         }
     }
@@ -1367,12 +1368,13 @@ public final class ViewRootImpl implements ViewParent,
         if (!mTraversalScheduled) {
             // 过滤
             mTraversalScheduled = true;
-            // 发送Handler消息屏障
+            // 发送Handler 同步消息屏障
             mTraversalBarrier = mHandler.getLooper().getQueue().postSyncBarrier();
-            // 异步执行mTraversalRunnable
+            // 交给Choreographer去调度mTraversalRunnable 执行屏幕绘制
             mChoreographer.postCallback(
                     Choreographer.CALLBACK_TRAVERSAL, mTraversalRunnable, null);
             if (!mUnbufferedInputDispatch) {
+                // 交给Choreographer去调度mConsumedBatchedInputRunnable 事件输入
                 scheduleConsumeBatchedInput();
             }
             notifyRendererOfFramePending();
@@ -1596,12 +1598,6 @@ public final class ViewRootImpl implements ViewParent,
         // cache mView since it is used so much below...
         final View host = mView;
 
-        if (DBG) {
-            System.out.println("======================================");
-            System.out.println("performTraversals");
-            host.debug();
-        }
-
         if (host == null || !mAdded)
             return;
 
@@ -1674,6 +1670,7 @@ public final class ViewRootImpl implements ViewParent,
             if (mViewLayoutDirectionInitial == View.LAYOUT_DIRECTION_INHERIT) {
                 host.setLayoutDirection(config.getLayoutDirection());
             }
+            // dispatchAttachedToWindow()回调
             host.dispatchAttachedToWindow(mAttachInfo, 0);
             mAttachInfo.mTreeObserver.dispatchOnWindowAttachedChange(true);
             dispatchApplyInsets(host);
@@ -2179,6 +2176,7 @@ public final class ViewRootImpl implements ViewParent,
                     // needs be
                     int width = host.getMeasuredWidth();
                     int height = host.getMeasuredHeight();
+                    // 设置了layout_weight 需要多次测量
                     boolean measureAgain = false;
 
                     if (lp.horizontalWeight > 0.0f) {
@@ -2198,6 +2196,7 @@ public final class ViewRootImpl implements ViewParent,
                         if (DEBUG_LAYOUT) Log.v(mTag,
                                 "And hey let's measure once more: width=" + width
                                 + " height=" + height);
+                        // 重新测量                                
                         performMeasure(childWidthMeasureSpec, childHeightMeasureSpec);
                     }
 
@@ -2256,7 +2255,7 @@ public final class ViewRootImpl implements ViewParent,
 
         if (triggerGlobalLayoutListener) {
             mAttachInfo.mRecomputeGlobalAttributes = false;
-            // 回调OnGlobalLayoutListener接口
+            // 回调OnGlobalLayoutListener接口 通过这个可以获取view的宽高
             mAttachInfo.mTreeObserver.dispatchOnGlobalLayout();
         }
 
