@@ -102,10 +102,12 @@ public final class Choreographer {
             new ThreadLocal<Choreographer>() {
         @Override
         protected Choreographer initialValue() {
+            // 当前线程的Looper
             Looper looper = Looper.myLooper();
             if (looper == null) {
                 throw new IllegalStateException("The current thread must have a looper!");
             }
+            // 创建对象
             Choreographer choreographer = new Choreographer(looper, VSYNC_SOURCE_APP);
             if (looper == Looper.getMainLooper()) {
                 mMainInstance = choreographer;
@@ -237,7 +239,7 @@ public final class Choreographer {
         mLastFrameTimeNanos = Long.MIN_VALUE;
 
         mFrameIntervalNanos = (long)(1000000000 / getRefreshRate());
-
+        // 初始化callbackQueue  
         mCallbackQueues = new CallbackQueue[CALLBACK_LAST + 1];
         for (int i = 0; i <= CALLBACK_LAST; i++) {
             mCallbackQueues[i] = new CallbackQueue();
@@ -634,6 +636,7 @@ public final class Choreographer {
 
             long intendedFrameTimeNanos = frameTimeNanos;
             startNanos = System.nanoTime();
+            // 计算掉帧的时间间隔为  (doFrame方法执行的时间 - Vsync信号到来的时间)
             final long jitterNanos = startNanos - frameTimeNanos;
             if (jitterNanos >= mFrameIntervalNanos) {
                 final long skippedFrames = jitterNanos / mFrameIntervalNanos;
@@ -688,7 +691,7 @@ public final class Choreographer {
             doCallbacks(Choreographer.CALLBACK_ANIMATION, frameTimeNanos);
 
             mFrameInfo.markPerformTraversalsStart();
-            // view动画
+            // view绘制 view动画
             doCallbacks(Choreographer.CALLBACK_TRAVERSAL, frameTimeNanos);
 
             doCallbacks(Choreographer.CALLBACK_COMMIT, frameTimeNanos);
@@ -788,7 +791,8 @@ public final class Choreographer {
             }
         }
     }
-
+    
+    // 请求vSync信号
     private void scheduleVsyncLocked() {
         mDisplayEventReceiver.scheduleVsync();
     }
@@ -882,7 +886,7 @@ public final class Choreographer {
 
         @Override
         public void onVsync(long timestampNanos, int builtInDisplayId, int frame) {
-            
+            // 接收回调
             // Post the vsync event to the Handler.
             // The idea is to prevent incoming vsync events from completely starving
             // the message queue.  If there are no messages in the queue with timestamps

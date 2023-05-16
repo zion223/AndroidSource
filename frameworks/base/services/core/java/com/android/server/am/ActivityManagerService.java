@@ -5527,6 +5527,7 @@ public class ActivityManagerService extends IActivityManager.Stub
         DumpStackFileObserver observer = new DumpStackFileObserver(tracesPath);
 
         // We must complete all stack dumps within 20 seconds.
+        // dump所有进程的最大时间 20s
         long remainingTime = 20 * 1000;
         try {
             observer.startWatching();
@@ -5543,6 +5544,7 @@ public class ActivityManagerService extends IActivityManager.Stub
                     if (remainingTime <= 0) {
                         Slog.e(TAG, "Aborting stack trace dump (current firstPid=" + firstPids.get(i) +
                             "); deadline exceeded.");
+                        // 时间超出后立马返回                            
                         return;
                     }
 

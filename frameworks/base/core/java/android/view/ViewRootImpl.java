@@ -3013,6 +3013,7 @@ public final class ViewRootImpl implements ViewParent,
                         mAttachInfo.mThreadedRenderer.isRequested()) {
 
                     try {
+                        // 初始化Render线程
                         mAttachInfo.mThreadedRenderer.initializeIfNeeded(
                                 mWidth, mHeight, mAttachInfo, mSurface, surfaceInsets);
                     } catch (OutOfResourcesException e) {

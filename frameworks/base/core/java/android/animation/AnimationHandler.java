@@ -53,7 +53,7 @@ public class AnimationHandler {
         public void doFrame(long frameTimeNanos) {
             doAnimationFrame(getProvider().getFrameTime());
             if (mAnimationCallbacks.size() > 0) {
-                // 继续通过Choreographer向底层注册  
+                // 继续通过Choreographer向底层注册Vsync信号  
                 getProvider().postFrameCallback(this);
             }
         }
@@ -93,6 +93,7 @@ public class AnimationHandler {
      */
     public void addAnimationFrameCallback(final AnimationFrameCallback callback, long delay) {
         if (mAnimationCallbacks.size() == 0) {
+            // 实际调用mChoreographer.postFrameCallback()
             getProvider().postFrameCallback(mFrameCallback);
         }
         if (!mAnimationCallbacks.contains(callback)) {
