@@ -177,7 +177,7 @@ class Http1ExchangeCodec(
     }
 
     try {
-      // 解析相应报文 返回的是 Http协议版本号 状态码 响应信息 
+      // 解析响应报文 返回的是 Http协议版本号 状态码 响应信息 
       // HTTP/1.1 200 OK
       val statusLine = StatusLine.parse(readHeaderLine())
 

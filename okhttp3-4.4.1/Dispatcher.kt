@@ -92,6 +92,8 @@ class Dispatcher constructor() {
   @get:JvmName("executorService") val executorService: ExecutorService
     get() {
       if (executorServiceOrNull == null) {
+        // 使用线程池 类似CachedThreadPool
+        // 特点 1.没有核心线程 2.根据需要创建线程，会复用之前的线程 3. 线程数量可以无限大 4.空闲线程存活时间60秒
         executorServiceOrNull = ThreadPoolExecutor(0, Int.MAX_VALUE, 60, TimeUnit.SECONDS,
             SynchronousQueue(), threadFactory("$okHttpName Dispatcher", false))
       }

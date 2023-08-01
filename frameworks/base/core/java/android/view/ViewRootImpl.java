@@ -481,6 +481,7 @@ public final class ViewRootImpl implements ViewParent,
         mWindowSession = WindowManagerGlobal.getWindowSession();
         mDisplay = display;
         mBasePackageName = context.getBasePackageName();
+        // View检查不能在子线程中更新ui使用的就是这个mThread作为对比
         mThread = Thread.currentThread();
         mLocation = new WindowLeaked(null);
         mLocation.fillInStackTrace();
@@ -510,7 +511,7 @@ public final class ViewRootImpl implements ViewParent,
         mDensity = context.getResources().getDisplayMetrics().densityDpi;
         mNoncompatDensity = context.getResources().getDisplayMetrics().noncompatDensityDpi;
         mFallbackEventHandler = new PhoneFallbackEventHandler(context);
-        // 系统的时间脉冲(垂直同步信号-VSync信号)  根据手机屏幕刷新率 60Hz 则为每16.7ms刷新一次
+        // 系统的时间脉冲(垂直同步信号-VSync信号)  根据手机屏幕刷新率  eg.60Hz 则约为每16.7ms刷新一次
         // 通过mChoreographer来执行异步测绘流程
         mChoreographer = Choreographer.getInstance();
         mDisplayManager = (DisplayManager)context.getSystemService(Context.DISPLAY_SERVICE);
@@ -817,7 +818,7 @@ public final class ViewRootImpl implements ViewParent,
                         mInputQueue = new InputQueue();
                         mInputQueueCallback.onInputQueueCreated(mInputQueue);
                     }
-                    // 创建事件接收器
+                    // 创建事件接收器 接收Input事件
                     mInputEventReceiver = new WindowInputEventReceiver(mInputChannel,
                             Looper.myLooper());
                 }
@@ -7325,6 +7326,7 @@ public final class ViewRootImpl implements ViewParent,
     }
 
     void checkThread() {
+        // 判断当前线程是不是创建ViewRootImpl的那个线程  不一定是主线程
         if (mThread != Thread.currentThread()) {
             throw new CalledFromWrongThreadException(
                     "Only the original thread that created a view hierarchy can touch its views.");

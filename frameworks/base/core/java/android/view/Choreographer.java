@@ -765,6 +765,7 @@ public final class Choreographer {
                 mCallbacksRunning = false;
                 do {
                     final CallbackRecord next = callbacks.next;
+                    // 回收
                     recycleCallbackLocked(callbacks);
                     callbacks = next;
                 } while (callbacks != null);

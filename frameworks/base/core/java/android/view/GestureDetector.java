@@ -143,7 +143,7 @@ public class GestureDetector {
 
         /**
          * Notified when an event within a double-tap gesture occurs, including
-         * the down, move, and up events.(包括第二次按下后的移动和抬起事件)
+         * the down, move, and up events.(包括第二次按下后的down move和up 事件)
          *
          * @param e The motion event that occurred during the double-tap gesture.
          * @return true if the event is consumed, else false
@@ -601,7 +601,7 @@ public class GestureDetector {
             mInLongPress = false;
             mDeferConfirmSingleTap = false;
 
-            // 判断是否长按是使能的  默认是使能的
+            // 判断是否支持长按 默认是true
             if (mIsLongpressEnabled) {
                 mHandler.removeMessages(LONG_PRESS);
                 // 500ms后发送LONGPRESS

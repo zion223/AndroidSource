@@ -141,6 +141,7 @@ public class PhoneWindow extends Window implements MenuBuilder.Callback {
     TypedValue mFixedHeightMinor;
 
     // This is the top-level view of the window, containing the window decor.
+    // 顶级View
     private DecorView mDecor;
 
     // When we reuse decor views, we need to recreate the content root. This happens when the decor

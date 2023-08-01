@@ -171,7 +171,7 @@ class RealCall(
   internal fun getResponseWithInterceptorChain(): Response {
     // 拦截器集合
     val interceptors = mutableListOf<Interceptor>()
-    // 可以自定义Interceptor
+    // 可以添加自定义Interceptor
     interceptors += client.interceptors // 可以自定义拦截器  eg.添加header
     interceptors += RetryAndFollowUpInterceptor(client) // 重试和重定向
     interceptors += BridgeInterceptor(client.cookieJar) // 桥接 

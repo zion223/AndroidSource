@@ -11696,7 +11696,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
             // We have focus and got the event, then use normal event dispatch.
             event.setTargetAccessibilityFocus(false);
         }
-        // 方法的返回值 事件是否被当前View处理
+        // 方法的返回值 事件是否被当前View消费
         boolean result = false;
 
         if (mInputEventConsistencyVerifier != null) {
@@ -11715,7 +11715,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
             }
             //noinspection SimplifiableIfStatement
             ListenerInfo li = mListenerInfo;
-            // 如果设置了OnTouchListener并且onTouch(View v, MotionEvent event)方法返回值为true则表示消费了该事件
+            // 如果设置了OnTouchListener并且onTouch()方法返回值为true则表示消费了该事件
             if (li != null && li.mOnTouchListener != null
                     && (mViewFlags & ENABLED_MASK) == ENABLED
                     && li.mOnTouchListener.onTouch(this, event)) {
@@ -12926,8 +12926,8 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
         final int viewFlags = mViewFlags;
         // 单点触摸，不支持多点触摸
         final int action = event.getAction();
-        // 只要有一个设置为true 则clickable设置为true 消耗该事件
-        // 如果设置了OnClickListener则clickable为true 消耗该事件
+        // 只要有一个设置为true 则clickable设置为true 消费该事件
+        // 如果设置了OnClickListener则clickable为true 消费该事件
         final boolean clickable = ((viewFlags & CLICKABLE) == CLICKABLE
                 || (viewFlags & LONG_CLICKABLE) == LONG_CLICKABLE)
                 || (viewFlags & CONTEXT_CLICKABLE) == CONTEXT_CLICKABLE;
@@ -12939,7 +12939,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
             mPrivateFlags3 &= ~PFLAG3_FINGER_DOWN;
             // A disabled view that is clickable still consumes the touch
             // events, it just doesn't respond to them.
-            // 会消耗触摸事件只是不响应
+            // 会消费触摸事件只是不响应
             return clickable;
         }
         if (mTouchDelegate != null) {
@@ -12948,7 +12948,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
                 return true;
             }
         }
-        // 如果当前View可以点击 或者当前View可以在悬停或长按时显示tip(解释性文字) 返回true 表示消耗事件
+        // 如果当前View可以点击 或者当前View可以在悬停或长按时显示tip(解释性文字) 返回true 表示消费事件
         // PS.像ImageView、TextView的默认clickable都为false 只有在设置了OnClickerListener后clickable属性才为true
         if (clickable || (viewFlags & TOOLTIP) == TOOLTIP) {
             switch (action) {
@@ -12974,6 +12974,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
                         // take focus if we don't have it already and we should in
                         // touch mode.
                         boolean focusTaken = false;
+                        // 视觉反馈的焦点 eg.电视按钮选中、EditText
                         if (isFocusable() && isFocusableInTouchMode() && !isFocused()) {
                             // 申请焦点 EditText
                             focusTaken = requestFocus();
@@ -13037,7 +13038,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
                     mHasPerformedLongPress = false;
 
                     if (!clickable) {
-                        // 检查LongClick 为了显示ToolTip
+                        // 如果不可以点击 检查LongClick 为了显示ToolTip
                         checkForLongClick(0, x, y);
                         break;
                     }
@@ -13078,6 +13079,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
                     if (clickable) {
                         setPressed(false);
                     }
+                    // 移除监听器
                     removeTapCallback();
                     removeLongPressCallback();
                     mInContextButtonPress = false;
@@ -13107,7 +13109,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
                     }
                     break;
             }
-            // 返回true表示消耗了这个事件
+            // 返回true表示消费了这个事件
             return true;
         }
 
@@ -18795,7 +18797,6 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
 
     /**
      * This method is called by ViewGroup.drawChild() to have each child view draw itself.
-     * 绘制在View
      * This is where the View specializes rendering behavior based on layer type,
      * and hardware acceleration.
      */

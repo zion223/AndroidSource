@@ -2492,7 +2492,7 @@ public abstract class ViewGroup extends View implements ViewParent, ViewManager 
                 // due to an app switch, ANR, or some other state change.
                 // 置mFirstTouchTarget为null
                 cancelAndClearTouchTargets(ev);
-                // 重置标志位 mGroupFlags 因此子类调用requestDisallowInterceptTouchEvent()后 ViewGroup仍然可以拦截到ACTION_DOWN事件
+                // 重置标志位 mGroupFlags 因此子类调用 requestDisallowInterceptTouchEvent()后 ViewGroup仍然可以拦截到ACTION_DOWN事件
                 resetTouchState();
             }
 
@@ -2507,7 +2507,7 @@ public abstract class ViewGroup extends View implements ViewParent, ViewManager 
             // 当前事件类型是ACTION_DOWN事件(全新的事件序列)或者当前ViewGroup没有拦截事件并且交给子View处理             
             if (actionMasked == MotionEvent.ACTION_DOWN
                     || mFirstTouchTarget != null) {
-                // mGroupFlags可以在子类调用requestDisallowInterceptTouchEvent()方法   默认为false                     
+                // mGroupFlags 可以在子类调用 requestDisallowInterceptTouchEvent()方法   默认为false                     
                 final boolean disallowIntercept = (mGroupFlags & FLAG_DISALLOW_INTERCEPT) != 0;
                 if (!disallowIntercept) {
                     // 调用onInterceptTouchEvent()方法 判断是否拦截此事件 默认返回false 不拦截此事件
@@ -2609,9 +2609,9 @@ public abstract class ViewGroup extends View implements ViewParent, ViewManager 
                             }
 
                             resetCancelNextUpFlag(child);
-                            // 子View调用dispatchTouchEvent()方法
-                            // 该方法返回false--则说明子view未消耗点击事件，mFirstTouchTarget则为null
-							// 该方法返回true --则说明子view消耗点击事件，从而进入if区域，从而mFirstTouchTarget不为null。
+                            // 子View调用dispatchTouchEvent()方法  事件的转换
+                            // 该方法返回false--则说明子view未消费点击事件，mFirstTouchTarget则为null
+							// 该方法返回true --则说明子view消费点击事件，从而进入if区域，从而mFirstTouchTarget不为null。
                             if (dispatchTransformedTouchEvent(ev, false, child, idBitsToAssign)) {
                                 // Child wants to receive touch within its bounds.
                                 mLastTouchDownTime = ev.getDownTime();
@@ -2678,7 +2678,7 @@ public abstract class ViewGroup extends View implements ViewParent, ViewManager 
                         // 判断是否需要给子View分发ACTION_CANCEL事件
                         final boolean cancelChild = resetCancelNextUpFlag(target.child)
                                 || intercepted;
-                        // 分发事件给子View  除了ACTION_DOWN之外的其他事件                             
+                        // 分发转换事件给子View  除了ACTION_DOWN之外的其他事件                             
                         if (dispatchTransformedTouchEvent(ev, cancelChild,
                                 target.child, target.pointerIdBits)) {
                             // 如果子View消费了事件

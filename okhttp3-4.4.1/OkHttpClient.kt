@@ -144,7 +144,7 @@ open class OkHttpClient internal constructor(
    * These interceptors must call [Interceptor.Chain.proceed] exactly once: it is an error for
    * a network interceptor to short-circuit or repeat a network request.
    */
-  // 配置的networkInterceptor
+  // 配置的networkInterceptor 供网络调试使用 一般不使用
   @get:JvmName("networkInterceptors") val networkInterceptors: List<Interceptor> =
       builder.networkInterceptors.toImmutableList()
 
