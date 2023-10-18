@@ -3423,6 +3423,7 @@ public final class ActivityThread {
             // 存入mServices
             mServices.put(data.token, service);
             try {
+                // 移除延迟消息
                 ActivityManager.getService().serviceDoneExecuting(
                         data.token, SERVICE_DONE_EXECUTING_ANON, 0, 0);
             } catch (RemoteException e) {
@@ -6543,7 +6544,7 @@ public final class ActivityThread {
         Looper.prepareMainLooper();
         // 创建ActivityThread
         ActivityThread thread = new ActivityThread();
-        // 调用attach方法 创建Application等
+        // 调用attach方法 Binder相关
         thread.attach(false);
 
         if (sMainThreadHandler == null) {

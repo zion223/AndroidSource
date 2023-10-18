@@ -170,6 +170,7 @@ public class Engine implements EngineJobListener,
     EngineKey key = keyFactory.buildKey(model, signature, width, height, transformations,
         resourceClass, transcodeClass, options);
     // 从弱引用中取  弱引用在触发GC时就会回收 无论此时内存是否够用 
+    // 没有触发GC时可以重复利用图片资源
     EngineResource<?> active = loadFromActiveResources(key, isMemoryCacheable);
     if (active != null) {
       cb.onResourceReady(active, DataSource.MEMORY_CACHE);

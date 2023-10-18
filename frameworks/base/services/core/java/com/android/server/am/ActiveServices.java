@@ -2760,6 +2760,7 @@ public final class ActiveServices {
                 if (r.app.executingServices.size() == 0) {
                     if (DEBUG_SERVICE || DEBUG_SERVICE_EXECUTING) Slog.v(TAG_SERVICE_EXECUTING,
                             "No more executingServices of " + r.shortName);
+                    // 移除delay消息                        
                     mAm.mHandler.removeMessages(ActivityManagerService.SERVICE_TIMEOUT_MSG, r.app);
                 } else if (r.executeFg) {
                     // Need to re-evaluate whether the app still needs to be in the foreground.
@@ -3342,6 +3343,7 @@ public final class ActiveServices {
         }
 
         if (anrMessage != null) {
+            // 产生ANR
             mAm.mAppErrors.appNotResponding(proc, null, null, false, anrMessage);
         }
     }

@@ -343,6 +343,7 @@ public final class Downsampler {
 
     final float exactScaleFactor;
     if (degreesToRotate == 90 || degreesToRotate == 270) {
+      // 图片旋转后 宽度和高度对调
       // If we're rotating the image +-90 degrees, we need to downsample accordingly so the image
       // width is decreased to near our target's height and the image height is decreased to near
       // our target width.
@@ -350,6 +351,7 @@ public final class Downsampler {
       exactScaleFactor = downsampleStrategy.getScaleFactor(sourceHeight, sourceWidth,
           targetWidth, targetHeight);
     } else {
+      // 计算exactScaleFactor
       exactScaleFactor =
           downsampleStrategy.getScaleFactor(sourceWidth, sourceHeight, targetWidth, targetHeight);
     }
@@ -360,28 +362,36 @@ public final class Downsampler {
           + ", source: [" + sourceWidth + "x" + sourceHeight + "]"
           + ", target: [" + targetWidth + "x" + targetHeight + "]");
     }
+    // 计算采样类型 是MEMORY还是QUALITY
     SampleSizeRounding rounding = downsampleStrategy.getSampleSizeRounding(sourceWidth,
         sourceHeight, targetWidth, targetHeight);
     if (rounding == null) {
       throw new IllegalArgumentException("Cannot round with null rounding");
     }
-
+    // round在原来的基础上加0.5f
     int outWidth = round(exactScaleFactor * sourceWidth);
     int outHeight = round(exactScaleFactor * sourceHeight);
-
+    // 宽度和高度的缩放因子
     int widthScaleFactor = sourceWidth / outWidth;
     int heightScaleFactor = sourceHeight / outHeight;
-
+    // 根据采样类型选择真正的scaleFactor
     int scaleFactor = rounding == SampleSizeRounding.MEMORY
         ? Math.max(widthScaleFactor, heightScaleFactor)
         : Math.min(widthScaleFactor, heightScaleFactor);
 
     int powerOfTwoSampleSize;
     // BitmapFactory does not support downsampling wbmp files on platforms <= M. See b/27305903.
+    // API23以下不支持
     if (Build.VERSION.SDK_INT <= 23
         && NO_DOWNSAMPLE_PRE_N_MIME_TYPES.contains(options.outMimeType)) {
       powerOfTwoSampleSize = 1;
     } else {
+      // 转换为2的幂次方数 找到小于或者等于这个数字的2的幂次方数
+      /**
+       * System.out.println(Integer.highestOneBit(15));  // 输出8
+         System.out.println(Integer.highestOneBit(16));  // 输出16
+         System.out.println(Integer.highestOneBit(17));  // 输出16
+       */
       powerOfTwoSampleSize = Math.max(1, Integer.highestOneBit(scaleFactor));
       if (rounding == SampleSizeRounding.MEMORY
           && powerOfTwoSampleSize < (1.f / exactScaleFactor)) {
@@ -391,13 +401,16 @@ public final class Downsampler {
 
     // Here we mimic framework logic for determining how inSampleSize division is rounded on various
     // versions of Android. The logic here has been tested on emulators for Android versions 15-26.
-    // PNG - Always uses floor
-    // JPEG - Always uses ceiling
+    // PNG - Always uses floor  向上取整 小数部分舍去，正数部分进一
+    // JPEG - Always uses ceiling 向下取整 小树部分直接舍去
     // Webp - Prior to N, always uses floor. At and after N, always uses round.
+    // 模仿framework的逻辑计算采样后的尺寸 比如说inSampleSize是4那么就是原先的1/4
     options.inSampleSize = powerOfTwoSampleSize;
+    // 计算采样后的图片尺寸
     int powerOfTwoWidth;
     int powerOfTwoHeight;
     if (imageType == ImageType.JPEG) {
+      // JPEG类型
       // libjpegturbo can downsample up to a sample size of 8. libjpegturbo uses ceiling to round.
       // After libjpegturbo's native rounding, skia does a secondary scale using floor
       // (integer division). Here we replicate that logic.
@@ -410,9 +423,11 @@ public final class Downsampler {
         powerOfTwoHeight = powerOfTwoHeight / secondaryScaling;
       }
     } else if (imageType == ImageType.PNG || imageType == ImageType.PNG_A) {
+      // PNG类型
       powerOfTwoWidth = (int) Math.floor(sourceWidth / (float) powerOfTwoSampleSize);
       powerOfTwoHeight = (int) Math.floor(sourceHeight / (float) powerOfTwoSampleSize);
     } else if (imageType == ImageType.WEBP || imageType == ImageType.WEBP_A) {
+      // WEBP类型
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
         powerOfTwoWidth = Math.round(sourceWidth / (float) powerOfTwoSampleSize);
         powerOfTwoHeight = Math.round(sourceHeight / (float) powerOfTwoSampleSize);
@@ -421,9 +436,10 @@ public final class Downsampler {
         powerOfTwoHeight = (int) Math.floor(sourceHeight / (float) powerOfTwoSampleSize);
       }
     } else if (
-        sourceWidth % powerOfTwoSampleSize != 0 || sourceHeight % powerOfTwoSampleSize != 0) {
+      sourceWidth % powerOfTwoSampleSize != 0 || sourceHeight % powerOfTwoSampleSize != 0) {
       // If we're not confident the image is in one of our types, fall back to checking the
       // dimensions again. inJustDecodeBounds decodes do obey inSampleSize.
+      // 通过原生的BitmapFactory的inJustDecodeBounds来获取尺寸
       int[] dimensions = getDimensions(is, options, decodeCallbacks, bitmapPool);
       // Power of two downsampling in BitmapFactory uses a variety of random factors to determine
       // rounding that we can't reliably replicate for all image formats. Use ceiling here to make
@@ -432,15 +448,17 @@ public final class Downsampler {
       powerOfTwoWidth = dimensions[0];
       powerOfTwoHeight = dimensions[1];
     } else {
+      // 不需要降采样
       powerOfTwoWidth = sourceWidth / powerOfTwoSampleSize;
       powerOfTwoHeight = sourceHeight / powerOfTwoSampleSize;
     }
-
+    // 根据降采样后的尺寸和目标尺寸 计算scaleFractor
     double adjustedScaleFactor = downsampleStrategy.getScaleFactor(
         powerOfTwoWidth, powerOfTwoHeight, targetWidth, targetHeight);
 
     // Density scaling is only supported if inBitmap is null prior to KitKat. Avoid setting
     // densities here so we calculate the final Bitmap size correctly.
+    // 设置inTargetDensity和inDensity
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
       options.inTargetDensity = adjustTargetDensityForError(adjustedScaleFactor);
       options.inDensity = getDensityMultiplier(adjustedScaleFactor);
@@ -450,7 +468,12 @@ public final class Downsampler {
     } else {
       options.inDensity = options.inTargetDensity = 0;
     }
-
+    /**
+     * 1.根据不同的缩放模式提供了不同的下采样策略实现，能应对更加丰富多变的场景
+       2.提前将采样大小转换为了2的次幂/，避免Native层的再次运算，并考虑了部分图片格式不支持采样的情况
+       3.根据不同的图片类型，提供相应的公式来计算采样后的图片尺寸
+       4.将采样后缩放因子拆分到inTargetDensity和inDensity，以实现采样后再精确缩放至目标尺寸
+     */
     if (Log.isLoggable(TAG, Log.VERBOSE)) {
       Log.v(TAG, "Calculate scaling"
           + ", source: [" + sourceWidth + "x" + sourceHeight + "]"

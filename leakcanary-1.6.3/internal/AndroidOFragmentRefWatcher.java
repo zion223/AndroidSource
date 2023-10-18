@@ -36,7 +36,8 @@ class AndroidOFragmentRefWatcher implements FragmentRefWatcher {
   private final FragmentManager.FragmentLifecycleCallbacks fragmentLifecycleCallbacks =
       new FragmentManager.FragmentLifecycleCallbacks() {
 
-        @Override public void onFragmentViewDestroyed(FragmentManager fm, Fragment fragment) {
+        @Override 
+        public void onFragmentViewDestroyed(FragmentManager fm, Fragment fragment) {
           // 监控fragment的view
           View view = fragment.getView();
           if (view != null) {

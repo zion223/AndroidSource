@@ -2550,6 +2550,8 @@ public abstract class ViewGroup extends View implements ViewParent, ViewManager 
                     // 事件的索引
                     final int actionIndex = ev.getActionIndex(); // always 0 for down
                     // 通过触摸点索引获取触摸点ID，并将ID值保存在一个int上面，通过第x位为1来表示(x=ID)
+                    // 如果记录pointerId为0，2，5时，pointerIdBits即为0010 0101，
+                    // 即：0对应0000 0001， 2对应0000 0100， 5对应0010 0000，然后通过或运算合并为0010 0101。
                     final int idBitsToAssign = split ? 1 << ev.getPointerId(actionIndex)
                             : TouchTarget.ALL_POINTER_IDS;
 
@@ -2710,6 +2712,8 @@ public abstract class ViewGroup extends View implements ViewParent, ViewManager 
                 // 清空touchTarget和相关状态
                 resetTouchState();
             } else if (split && actionMasked == MotionEvent.ACTION_POINTER_UP) {
+                // 若是某个触摸点的事件子序列结束，则从所有TouchTarget中移除该触摸点ID。
+                // 若有TouchTarget移除ID后，ID为空，则再移除这个TouchTarget。
                 final int actionIndex = ev.getActionIndex();
                 final int idBitsToRemove = 1 << ev.getPointerId(actionIndex);
                 removePointersFromTouchTargets(idBitsToRemove);

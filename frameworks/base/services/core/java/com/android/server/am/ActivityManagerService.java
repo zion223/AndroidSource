@@ -1964,6 +1964,7 @@ public class ActivityManagerService extends IActivityManager.Stub
                 }
             } break;
             case SERVICE_TIMEOUT_MSG: {
+                // Service超时 产生ANR
                 if (mDidDexOpt) {
                     mDidDexOpt = false;
                     Message nmsg = mHandler.obtainMessage(SERVICE_TIMEOUT_MSG);

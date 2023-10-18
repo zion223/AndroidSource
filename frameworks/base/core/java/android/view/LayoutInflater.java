@@ -1092,16 +1092,20 @@ public abstract class LayoutInflater {
             final String name = parser.getName();
 
             if (TAG_REQUEST_FOCUS.equals(name)) {
+                // requestFocus标签
                 pendingRequestFocus = true;
                 consumeChildElements(parser);
             } else if (TAG_TAG.equals(name)) {
+                // tag标签
                 parseViewTag(parser, parent, attrs);
             } else if (TAG_INCLUDE.equals(name)) {
+                // include标签
                 if (parser.getDepth() == 0) {
                     throw new InflateException("<include /> cannot be the root element");
                 }
                 parseInclude(parser, context, parent, attrs);
             } else if (TAG_MERGE.equals(name)) {
+                // merge标签
                 throw new InflateException("<merge /> must be the root element");
             } else {
                 final View view = createViewFromTag(parent, name, context, attrs);

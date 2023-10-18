@@ -37,7 +37,7 @@ public final class GlideBuilder {
   private Engine engine;
   private BitmapPool bitmapPool;
   private ArrayPool arrayPool;
-  private MemoryCache memoryCache;
+  private MemoryCache memoryCache; // 内存缓存
   private GlideExecutor sourceExecutor; //源文件线程池
   private GlideExecutor diskCacheExecutor; // 硬盘缓存线程池
   private DiskCache.Factory diskCacheFactory;
@@ -47,7 +47,7 @@ public final class GlideBuilder {
   private RequestOptions defaultRequestOptions = new RequestOptions();
   @Nullable
   private RequestManagerFactory requestManagerFactory;
-  private GlideExecutor animationExecutor;
+  private GlideExecutor animationExecutor; // 动画线程池
   private boolean isActiveResourceRetentionAllowed;
 
   /**

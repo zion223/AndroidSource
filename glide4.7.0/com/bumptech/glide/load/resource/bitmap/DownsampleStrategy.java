@@ -4,6 +4,7 @@ import com.bumptech.glide.util.Synthetic;
 
 /**
  * Indicates the algorithm to use when downsampling images.
+ * 下采样策略
  */
 // Public API.
 @SuppressWarnings("WeakerAccess")
