@@ -6445,7 +6445,7 @@ public final class ActivityThread {
                 ContextImpl context = ContextImpl.createAppContext(
                         this, getSystemContext().mPackageInfo);
                 mInitialApplication = context.mPackageInfo.makeApplication(true, null);
-                 mInitialApplication.onCreate();
+                mInitialApplication.onCreate();
             } catch (Exception e) {
                 throw new RuntimeException(
                         "Unable to instantiate Application():" + e.toString(), e);

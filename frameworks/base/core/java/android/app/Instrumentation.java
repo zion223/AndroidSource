@@ -1098,6 +1098,7 @@ public class Instrumentation {
     static public Application newApplication(Class<?> clazz, Context context)
             throws InstantiationException, IllegalAccessException, 
             ClassNotFoundException {
+        // 创建Application对象
         Application app = (Application)clazz.newInstance();
         // 调用Application类的attach()方法
         app.attach(context);

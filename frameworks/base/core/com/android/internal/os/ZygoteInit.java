@@ -125,8 +125,9 @@ public class ZygoteInit {
         Log.d(TAG, "begin preload");
 
         beginIcuCachePinning();
-
+        // 预加载class
         preloadClasses();
+        // 预加载resources
         preloadResources();
         preloadOpenGL();
         preloadSharedLibraries();
@@ -288,6 +289,7 @@ public class ZygoteInit {
                     // (to derive the caller's class-loader). Use true to force initialization, and
                     // null for the boot classpath class-loader (could as well cache the
                     // class-loader of this class in a variable).
+                    // 提前加载Class文件
                     Class.forName(line, true, null);
                     count++;
                 } catch (ClassNotFoundException e) {

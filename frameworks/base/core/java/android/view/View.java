@@ -17411,6 +17411,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
         // Transfer all pending runnables.
         if (mRunQueue != null) {
             // 执行待处理的runnables  通过ViewRootImpl的 ViewRootHandler
+            // info.mHandler绑定的是主线程的Looper
             mRunQueue.executeActions(info.mHandler);
             mRunQueue = null;
         }

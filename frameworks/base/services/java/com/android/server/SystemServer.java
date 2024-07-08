@@ -658,6 +658,7 @@ public final class SystemServer {
      */
     private void startCoreServices() {
         // Records errors and logs, for example wtf()
+        // 日志记录服务
         traceBeginAndSlog("StartDropBoxManager");
         mSystemServiceManager.startService(DropBoxManagerService.class);
         traceEnd();
@@ -736,7 +737,7 @@ public final class SystemServer {
             throw new RuntimeException();
         }
 
-        try {
+         try {
             final String SECONDARY_ZYGOTE_PRELOAD = "SecondaryZygotePreload";
             // We start the preload ~1s before the webview factory preparation, to
             // ensure that it completes before the 32 bit relro process is forked

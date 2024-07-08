@@ -129,7 +129,6 @@ class ZygoteServer {
      * Runs the zygote process's select loop. Accepts new connections as
      * they happen, and reads commands from connections one spawn-request's
      * worth at a time.
-     * ZygoteInit的main()方法调用
      *
      * @throws Zygote.MethodAndArgsCaller in a child process when a main()
      * should be executed.

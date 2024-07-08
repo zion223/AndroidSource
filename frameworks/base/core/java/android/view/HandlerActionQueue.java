@@ -82,6 +82,7 @@ public class HandlerActionQueue {
             final HandlerAction[] actions = mActions;
             for (int i = 0, count = mCount; i < count; i++) {
                 final HandlerAction handlerAction = actions[i];
+                // 通过handler执行
                 handler.postDelayed(handlerAction.action, handlerAction.delay);
             }
 
