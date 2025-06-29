@@ -241,10 +241,6 @@ class RealCall(
 
   /** Finds a new or pooled connection to carry a forthcoming request and response. */
   internal fun initExchange(chain: RealInterceptorChain): Exchange {
-    synchronized(connectionPool) {
-      check(!noMoreExchanges) { "released" }
-      check(exchange == null)
-    }
 
     // 编码解码器 eg. Http1ExchangeCodec 、Http2ExchangeCodec
     val codec = exchangeFinder!!.find(client, chain)
@@ -371,6 +367,7 @@ class RealCall(
 
     val released = this.connection
     released!!.calls.removeAt(index)
+    // 将当前call的connection设置为null
     this.connection = null
 
     if (released.calls.isEmpty()) {
@@ -418,21 +415,21 @@ class RealCall(
     interceptorScopedExchange = null
   }
 
-  // 创建地址
+  // 创建Address
   private fun createAddress(url: HttpUrl): Address {
     var sslSocketFactory: SSLSocketFactory? = null
     var hostnameVerifier: HostnameVerifier? = null
     var certificatePinner: CertificatePinner? = null
     if (url.isHttps) {
-      // 判断url是否是Https类型的
+      // Https类型的
       sslSocketFactory = client.sslSocketFactory
       hostnameVerifier = client.hostnameVerifier
       certificatePinner = client.certificatePinner
     }
 
     return Address(
-        uriHost = url.host,
-        uriPort = url.port,
+        uriHost = url.host, //主机名
+        uriPort = url.port, //端口号 Http->80 Https->443
         dns = client.dns,
         socketFactory = client.socketFactory,
         sslSocketFactory = sslSocketFactory,

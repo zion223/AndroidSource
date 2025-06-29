@@ -186,12 +186,7 @@ class ExchangeFinder(
     }
     toClose?.closeQuietly()
 
-    if (releasedConnection != null) {
-      eventListener.connectionReleased(call, releasedConnection!!)
-    }
-    if (foundPooledConnection) {
-      eventListener.connectionAcquired(call, result!!)
-    }
+
     if (result != null) {
       // If we found an already-allocated or pooled connection, we're done.
       return result!!
@@ -208,9 +203,16 @@ class ExchangeFinder(
       }
       newRouteSelection = true
       // 查找下一个RouteSelection
+      // Selection 同一个端口 同样的代理类型 不同的Ip地址的Route集合
+      /**
+       * 直连类型
+       *  1.2.3.4:443
+       *  5.6.7.8:443
+       */
       routeSelection = localRouteSelector.next()
     }
 
+    // route  = address + proxy
     var routes: List<Route>? = null
     synchronized(connectionPool) {
       if (call.isCanceled()) throw IOException("Canceled")
@@ -221,7 +223,7 @@ class ExchangeFinder(
 
         // RouteSelector > Selection(routeSelection) > Route
         routes = routeSelection!!.routes
-        // 3. 再次尝试拿取连接 可多路复用
+        // 3. 再次尝试拿取连接 可多路复用 可以拿到http2连接合并的connection
         if (connectionPool.callAcquirePooledConnection(address, call, routes, false)) {
           foundPooledConnection = true
           result = call.connection
@@ -235,6 +237,7 @@ class ExchangeFinder(
 
         // Create a connection and assign it to this allocation immediately. This makes it possible
         // for an asynchronous cancel() to interrupt the handshake we're about to do.
+        // 创建连接
         result = RealConnection(connectionPool, selectedRoute!!)
         connectingConnection = result
       }
@@ -242,7 +245,6 @@ class ExchangeFinder(
 
     // If we found a pooled connection on the 2nd time around, we're done.
     if (foundPooledConnection) {
-      eventListener.connectionAcquired(call, result!!)
       return result!!
     }
 
@@ -266,12 +268,13 @@ class ExchangeFinder(
       connectingConnection = null
       // Last attempt at connection coalescing, which only occurs if we attempted multiple
       // concurrent connections to the same host.
-      // 5. 只多路复用模式再次尝试获取连接
+      // 5. 只多路复用模式再次尝试获取连接 HTTP2的连接
       if (connectionPool.callAcquirePooledConnection(address, call, routes, true)) {
         // We lost the race! Close the connection we created and return the pooled connection.
         // 销毁第四步刚创建的socket，节省资源
         result!!.noNewExchanges = true
         socket = result!!.socket()
+        // 使用获取到的connection
         result = call.connection
 
         // It's possible for us to obtain a coalesced connection that is immediately unhealthy. In
@@ -286,7 +289,6 @@ class ExchangeFinder(
     }
     socket?.closeQuietly()
 
-    eventListener.connectionAcquired(call, result!!)
     return result!!
   }
 

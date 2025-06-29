@@ -74,7 +74,7 @@ final class DefaultCallAdapterFactory extends CallAdapter.Factory {
       this.delegate = delegate;
     }
 
-    // 调用的enqueue()方法最终调用到这里
+    // apiService.enqueue() 调用的enqueue()方法最终调用到这里
     @Override 
     public void enqueue(final Callback<T> callback) {
       // 这里的delegate默认是OkHttpCall

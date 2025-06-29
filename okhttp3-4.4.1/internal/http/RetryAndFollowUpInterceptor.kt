@@ -324,7 +324,10 @@ class RetryAndFollowUpInterceptor(private val client: OkHttpClient) : Intercepto
   }
 
 
-  // 构建重定向的请求
+  /**
+   *  构建重定向的请求
+   *  
+   * */ 
   private fun buildRedirectRequest(userResponse: Response, method: String): Request? {
     // Does the client allow redirects? 客户端配置是否可以重定向
     if (!client.followRedirects) return null

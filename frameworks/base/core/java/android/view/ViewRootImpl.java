@@ -2864,6 +2864,7 @@ public final class ViewRootImpl implements ViewParent,
 
     private void draw(boolean fullRedrawNeeded) {
         Surface surface = mSurface;
+        // 判断surface是否有效
         if (!surface.isValid()) {
             return;
         }

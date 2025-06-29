@@ -147,9 +147,6 @@ class RouteSelector(
     } else {
       // 代理方式
       val proxyAddress = proxy.address()
-      require(proxyAddress is InetSocketAddress) {
-        "Proxy.address() is not an InetSocketAddress: ${proxyAddress.javaClass}"
-      }
       socketHost = proxyAddress.socketHost
       socketPort = proxyAddress.port
     }
@@ -169,8 +166,6 @@ class RouteSelector(
       if (addresses.isEmpty()) {
         throw UnknownHostException("${address.dns} returned no addresses for $socketHost")
       }
-
-      eventListener.dnsEnd(call, socketHost, addresses)
 
       for (inetAddress in addresses) {
         mutableInetSocketAddresses += InetSocketAddress(inetAddress, socketPort)

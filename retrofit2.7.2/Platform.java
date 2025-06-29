@@ -108,6 +108,7 @@ class Platform {
     }
 
     static class MainThreadExecutor implements Executor {
+      // 通过handler将线程切回到主线程中
       private final Handler handler = new Handler(Looper.getMainLooper());
 
       @Override public void execute(Runnable r) {

@@ -628,12 +628,6 @@ public final class Choreographer {
                 return; // no work to do
             }
 
-            if (DEBUG_JANK && mDebugPrintNextFrameTimeDelta) {
-                mDebugPrintNextFrameTimeDelta = false;
-                Log.d(TAG, "Frame time delta: "
-                        + ((frameTimeNanos - mLastFrameTimeNanos) * 0.000001f) + " ms");
-            }
-
             long intendedFrameTimeNanos = frameTimeNanos;
             startNanos = System.nanoTime();
             // 计算掉帧的时间间隔为  (doFrame方法执行的时间 - Vsync信号到来的时间)
@@ -646,21 +640,10 @@ public final class Choreographer {
                             + "The application may be doing too much work on its main thread.");
                 }
                 final long lastFrameOffset = jitterNanos % mFrameIntervalNanos;
-                if (DEBUG_JANK) {
-                    Log.d(TAG, "Missed vsync by " + (jitterNanos * 0.000001f) + " ms "
-                            + "which is more than the frame interval of "
-                            + (mFrameIntervalNanos * 0.000001f) + " ms!  "
-                            + "Skipping " + skippedFrames + " frames and setting frame "
-                            + "time to " + (lastFrameOffset * 0.000001f) + " ms in the past.");
-                }
                 frameTimeNanos = startNanos - lastFrameOffset;
             }
 
             if (frameTimeNanos < mLastFrameTimeNanos) {
-                if (DEBUG_JANK) {
-                    Log.d(TAG, "Frame time appears to be going backwards.  May be due to a "
-                            + "previously skipped frame.  Waiting for next vsync.");
-                }
                 scheduleVsyncLocked();
                 return;
             }
@@ -700,12 +683,6 @@ public final class Choreographer {
             Trace.traceEnd(Trace.TRACE_TAG_VIEW);
         }
 
-        if (DEBUG_FRAMES) {
-            final long endNanos = System.nanoTime();
-            Log.d(TAG, "Frame " + frame + ": Finished, took "
-                    + (endNanos - startNanos) * 0.000001f + " ms, latency "
-                    + (startNanos - frameTimeNanos) * 0.000001f + " ms.");
-        }
     }
 
     void doCallbacks(int callbackType, long frameTimeNanos) {
@@ -722,28 +699,12 @@ public final class Choreographer {
             }
             mCallbacksRunning = true;
 
-            // Update the frame time if necessary when committing the frame.
-            // We only update the frame time if we are more than 2 frames late reaching
-            // the commit phase.  This ensures that the frame time which is observed by the
-            // callbacks will always increase from one frame to the next and never repeat.
-            // We never want the next frame's starting frame time to end up being less than
-            // or equal to the previous frame's commit frame time.  Keep in mind that the
-            // next frame has most likely already been scheduled by now so we play it
-            // safe by ensuring the commit time is always at least one frame behind.
+
             if (callbackType == Choreographer.CALLBACK_COMMIT) {
                 final long jitterNanos = now - frameTimeNanos;
-                Trace.traceCounter(Trace.TRACE_TAG_VIEW, "jitterNanos", (int) jitterNanos);
                 if (jitterNanos >= 2 * mFrameIntervalNanos) {
                     final long lastFrameOffset = jitterNanos % mFrameIntervalNanos
                             + mFrameIntervalNanos;
-                    if (DEBUG_JANK) {
-                        Log.d(TAG, "Commit callback delayed by " + (jitterNanos * 0.000001f)
-                                + " ms which is more than twice the frame interval of "
-                                + (mFrameIntervalNanos * 0.000001f) + " ms!  "
-                                + "Setting frame time to " + (lastFrameOffset * 0.000001f)
-                                + " ms in the past.");
-                        mDebugPrintNextFrameTimeDelta = true;
-                    }
                     frameTimeNanos = now - lastFrameOffset;
                     mLastFrameTimeNanos = frameTimeNanos;
                 }
@@ -752,11 +713,6 @@ public final class Choreographer {
         try {
             Trace.traceBegin(Trace.TRACE_TAG_VIEW, CALLBACK_TRACE_TITLES[callbackType]);
             for (CallbackRecord c = callbacks; c != null; c = c.next) {
-                if (DEBUG_FRAMES) {
-                    Log.d(TAG, "RunCallback: type=" + callbackType
-                            + ", action=" + c.action + ", token=" + c.token
-                            + ", latencyMillis=" + (SystemClock.uptimeMillis() - c.dueTime));
-                }
                 // 执行任务
                 c.run(frameTimeNanos);
             }
@@ -912,6 +868,7 @@ public final class Choreographer {
             mFrame = frame;
             // 设置callback为自己
             Message msg = Message.obtain(mHandler, this);
+            // 异步Message
             msg.setAsynchronous(true);
             mHandler.sendMessageAtTime(msg, timestampNanos / TimeUtils.NANOS_PER_MS);
         }

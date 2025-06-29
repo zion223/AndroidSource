@@ -87,7 +87,6 @@ final class OkHttpCall<T> implements Call<T> {
 
   @Override 
   public void enqueue(final Callback<T> callback) {
-    Objects.requireNonNull(callback, "callback == null");
 
     okhttp3.Call call;
     Throwable failure;
@@ -119,7 +118,8 @@ final class OkHttpCall<T> implements Call<T> {
     }
 
     call.enqueue(new okhttp3.Callback() {
-      @Override public void onResponse(okhttp3.Call call, okhttp3.Response rawResponse) {
+      @Override 
+      public void onResponse(okhttp3.Call call, okhttp3.Response rawResponse) {
         Response<T> response;
         try {
           // 解析response
@@ -139,7 +139,8 @@ final class OkHttpCall<T> implements Call<T> {
         }
       }
 
-      @Override public void onFailure(okhttp3.Call call, IOException e) {
+      @Override 
+      public void onFailure(okhttp3.Call call, IOException e) {
         callFailure(e);
       }
 
@@ -155,11 +156,13 @@ final class OkHttpCall<T> implements Call<T> {
     });
   }
 
-  @Override public synchronized boolean isExecuted() {
+  @Override 
+  public synchronized boolean isExecuted() {
     return executed;
   }
 
-  @Override public Response<T> execute() throws IOException {
+  @Override 
+  public Response<T> execute() throws IOException {
     okhttp3.Call call;
 
     synchronized (this) {

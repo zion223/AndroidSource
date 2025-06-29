@@ -137,6 +137,7 @@ public final class Looper {
             // 从MessageQueue中读取下一条消息 可能会阻塞
             Message msg = queue.next(); // might block
             if (msg == null) {
+                // Looper已经退出
                 // No message indicates that the message queue is quitting.
                 return;
             }

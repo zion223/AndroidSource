@@ -160,13 +160,13 @@ class RealConnection(
     call: Call,
     eventListener: EventListener
   ) {
-    check(protocol == null) { "already connected" }
 
     var routeException: RouteException? = null
     val connectionSpecs = route.address.connectionSpecs
     val connectionSpecSelector = ConnectionSpecSelector(connectionSpecs)
 
     if (route.address.sslSocketFactory == null) {
+      // 不是HTTPS 地址
       if (ConnectionSpec.CLEARTEXT !in connectionSpecs) {
         throw RouteException(UnknownServiceException(
             "CLEARTEXT communication not enabled for client"))
@@ -199,7 +199,6 @@ class RealConnection(
         }
         // 确定连接协议
         establishProtocol(connectionSpecSelector, pingIntervalMillis, call, eventListener)
-        eventListener.connectEnd(call, route.socketAddress, route.proxy, protocol)
         break
       } catch (e: IOException) {
         socket?.closeQuietly()
@@ -283,7 +282,6 @@ class RealConnection(
     // tcp连接
     this.rawSocket = rawSocket
 
-    eventListener.connectStart(call, route.socketAddress, proxy)
     rawSocket.soTimeout = readTimeout
     try {
       Platform.get().connectSocket(rawSocket, route.socketAddress, connectTimeout)
@@ -328,11 +326,8 @@ class RealConnection(
       protocol = Protocol.HTTP_1_1
       return
     }
-
-    eventListener.secureConnectStart(call)
-    // 加密连接
+    // 建立加密连接
     connectTls(connectionSpecSelector)
-    eventListener.secureConnectEnd(call, handshake)
     // 加密的HTTP2连接
     if (protocol === Protocol.HTTP_2) {
       startHttp2(pingIntervalMillis)
@@ -528,14 +523,15 @@ class RealConnection(
    */
   internal fun isEligible(address: Address, routes: List<Route>?): Boolean {
     // If this connection is not accepting new exchanges, we're done.
-    // 请求数不超过限制
+    // 请求数量不超过限制
     if (calls.size >= allocationLimit || noNewExchanges) return false
 
+    // 协议 代理和对应的TCP端口等等都需要一样
     // If the non-host fields of the address don't overlap, we're done.
     if (!this.route.address.equalsNonHost(address)) return false
 
     // If the host exactly matches, we're done: this connection can carry the address.
-    // 主机名一样
+    // 主机名一样  
     if (address.url.host == this.route().address.url.host) {
       return true // This connection is a perfect match.
     }
@@ -554,11 +550,12 @@ class RealConnection(
     if (routes == null || !routeMatchesAny(routes)) return false
 
     // 3. This connection's server certificate's must cover the new host.
-    // 证书一致
+    // 验证证书一致
     if (address.hostnameVerifier !== OkHostnameVerifier) return false
     if (!supportsUrl(address.url)) return false
 
     // 4. Certificate pinning must match the host.
+    // 证书锁定
     try {
       address.certificatePinner!!.check(address.url.host, handshake()!!.peerCertificates)
     } catch (_: SSLPeerUnverifiedException) {

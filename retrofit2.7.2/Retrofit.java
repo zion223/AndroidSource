@@ -465,11 +465,12 @@ public final class Retrofit {
 
       Executor callbackExecutor = this.callbackExecutor;
       if (callbackExecutor == null) {
-          // Android平台下默认是MainThreadExecutor  可以将线程切换回主线程 使用Handler.post()形式
+        // new Handler(Looper.getMainLooper()).post()
+        // Android平台下默认是 MainThreadExecutor  可以通过Handler将线程切换回主线程 使用Handler.post()形式
         callbackExecutor = platform.defaultCallbackExecutor();
       }
 
-      // 添加callAdapterFactory
+      // 添加callAdapterFactory 平台默认的是DefaultCallAdapterFactory
       List<CallAdapter.Factory> callAdapterFactories = new ArrayList<>(this.callAdapterFactories);
       callAdapterFactories.addAll(platform.defaultCallAdapterFactories(callbackExecutor));
 

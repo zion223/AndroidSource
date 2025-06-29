@@ -99,8 +99,9 @@ abstract class HttpServiceMethod<ResponseT, ReturnT> extends ServiceMethod<Retur
         /**
          * requestFactory: requestFactory
          * callFactory: okHttpClient
-         * responseConverter: eg. BuiltInConverters、GsonConverterFactory
-         * callAdapter: DefaultCallAdapterFactory类的get()方法返回的CallAdapter
+         * responseConverter: eg. BuiltInConverters、 GsonConverterFactory
+         * callAdapter: DefaultCallAdapterFactory类的get()方法返回的callAdapter 
+         *              或者自己通过addCallAdapterFactory()添加的callAdapter
          */
       return new CallAdapted<>(requestFactory, callFactory, responseConverter, callAdapter);
     } else if (continuationWantsResponse) {
@@ -154,6 +155,8 @@ abstract class HttpServiceMethod<ResponseT, ReturnT> extends ServiceMethod<Retur
   final @Nullable ReturnT invoke(Object[] args) {
     // 创建OkHttpCall对象
     Call<ResponseT> call = new OkHttpCall<>(requestFactory, args, callFactory, responseConverter);
+    // 经过adapt方法将原始的call包裹了一层 默认的目的是为了切线程（子线程执行，主线程返回）
+    // 或者可以是RxJava的方法 变换 切线程等
     return adapt(call, args);
   }
 
@@ -174,7 +177,7 @@ abstract class HttpServiceMethod<ResponseT, ReturnT> extends ServiceMethod<Retur
 
     @Override 
     protected ReturnT adapt(Call<ResponseT> call, Object[] args) {
-      // 这里是DefaultCallAdapterFactory中的get()方法返回的匿名内部类的adapt()方法
+      // 这里是 DefaultCallAdapterFactory 中的get()方法返回的匿名内部类的adapt()方法
       // 返回的是 ExecutorCallbackCall 就是最终执行enqueue()或者execute()的类
       return callAdapter.adapt(call);
     }

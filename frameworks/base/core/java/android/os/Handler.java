@@ -94,7 +94,7 @@ public class Handler {
      * Handle system messages here.
      * 由Looper中调用，处理消息
      * msg.target.dispatchMessage(msg)
-     */
+     */ 
     public void dispatchMessage(Message msg) {
         if (msg.callback != null) {
             // 通过post(Runnable r)方法传递的参数
@@ -102,7 +102,7 @@ public class Handler {
             handleCallback(msg);
         } else {
             if (mCallback != null) {
-                // callback中的回调
+                // callback中的回调 返回true可以继续往下执行
                 if (mCallback.handleMessage(msg)) {
                     return;
                 }

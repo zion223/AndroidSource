@@ -55,7 +55,7 @@ enum class Protocol(private val protocol: String) {
   /**
    * The IETF's binary-framed protocol that includes header compression, multiplexing multiple
    * requests on the same socket, and server-push. HTTP/1.1 semantics are layered on HTTP/2.
-   *
+   * 修改了HTTP的保温传输格式，使用二进制分帧实现性能的提升
    * HTTP/2 requires deployments of HTTP/2 that use TLS 1.2 support
    * [CipherSuite.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256], present in Java 8+ and Android 5+.
    * Servers that enforce this may send an exception message including the string
